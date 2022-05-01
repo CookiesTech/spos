@@ -1,151 +1,146 @@
-@include('layouts.links')@include('layouts.header')
-<ul class="breadcrumb">    
-  <li>
-    <a href="home">Home
-    </a>
-  </li>    
-  <li class="active">Employees
-  </li>
+@include('layouts.links')
+@include('layouts.header')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
+<ul class="breadcrumb">
+    <li><a href="#">Home</a></li>
 </ul>
 <!-- END BREADCRUMB -->
 <!-- PAGE TITLE -->
-<div class="page-title">                        
-  <h2>
-    <span class="fa fa-arrow-circle-o-left">
-    </span> Target Master -  {{date('F') }}
-  </h2>
+<div class="page-title">                    
+    <h2><span class="fa fa-arrow-circle-o-left"></span> Target Managers  {{date('F')}}</h2>
 </div>
 <!-- END PAGE TITLE -->                
 <!-- PAGE CONTENT WRAPPER -->
-<div class="page-content-wrap">    
-  <div class="row">        
-    <div class="col-md-12">            
-      <!-- START DATATABLE EXPORT -->            
-      <div class="panel panel-default">                
-        <div class="panel-heading">                    
-          <div class="btn-group pull-right">                        
-           <a href="{{ ('add_new_target') }}"> <button class="btn btn-primary"  type="button" style="float:right">Add New Target
-            </button></a>
-            <br>
-            <br>                    
-          </div>                                                    
-        </div>      
-        <div class="panel-body">                    
-          <table id="customers2" class="table datatable">                        
-            <thead>                            
-              <tr>                                
-                <th>                                    S.No                            
-                </th>                                   
-                <th>                                    Branch                                
-                </th>                                
-                <th>                                    Emp Id                                
-                </th>                                
-                <th>                                    From Date                            
-                </th>                                
-                <th>                                    To Date                            
-                </th>                                
-                <th>                                    Target Amount                            
-                </th>                                                                    
-                <th>                                    Sales Amount                                
-                </th>                                                                     
-                <th>                                    Balance                               
-                </th>                                
-                <!-- <th>                                    Actions                                
-                </th>                             -->
-              </tr>                        
-            </thead>                        
-            <tbody>                            
-              <?php $i = 1; ?>                            @foreach($datas as $data)                            
-              <tr class="{{$data->id}}">                               
-                <td>                                    {{ $i }}                                
-                </td>                                
-                <td>                                    {{ $data->branch_id }}                                
-                </td>                                
-                <td>                                    {{ $data->emp_id }}                                
-                </td>                                
-                <td>                                    {{ $data->from_date }}                                
-                </td>                                
-                <td>                                    {{ $data->to_date }}                                
-                </td>                                 
-                <td>                                    {{ $data->target_amount }}                                
-                </td>                                
-                <td>                                    {{ $data->sales_amount }}                                
-                </td>                                 
-               @if($data->target_amount >=$data->sales_amount) 
-               <td>
-                 <span class="label label-danger">{{ ($data->target_amount-$data->sales_amount) }}</span>  
-                </td>
-                @else
-                    <td>
-                    <span class="label label-success"> {{ $data->target_amount-$data->sales_amount }}</span>  
-                </td>
-                @endif
-                <!-- <td class="row-actions">                                    
-                  <button class="btn btn-primary" data-target="#edit{{ $data->id  }}" data-toggle="modal" type="button">
-                    <i class="os-icon os-icon-ui-49">Edit
-                    </i>
-                  </button>                                    
-                  <button class="btn btn-primary delete" type="button" data-id="{{$data->emp_id}}">
-                    <i class="os-icon os-icon-ui-15">Delete
-                    </i>
-                  </button>                                
-                </td>                             -->
-              </tr>                            
-              <?php $i++; ?>                            @endforeach                        
-            </tbody>                    
-          </table>                                                    
-        </div>            
-      </div>        
-    </div>    
-  </div>
+<div class="page-content-wrap">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- START DATATABLE EXPORT -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                </div>
+                <div class="panel-body">
+                    <button class="btn btn-primary" data-target="#exampleModal1" data-toggle="modal" type="button" style="float:right">Add New Target</button><br><br>
+                    <table id="datatable" class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Emp ID</th>
+                                <th>Branch</th>
+                                <th>Saled Count</th>
+                                <th>Target Amount</th>
+                                <th>Carry Forward</th>
+                                <th>Saled Amount</th>
+                                <th>Total Target</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                  
+                        </tbody>
+                    </table>                                    
+                </div>
+            </div>
+        </div>
+    </div>
 </div>                              
 </div>            
 <!-- END PAGE CONTENT -->
 </div>
 </div>
-</div>@include('layouts.footer')  
-
-<script>   
- $(document).on('click', '.delete', function (e) {
-    var id = $(this).data('id');
-    e.preventDefault();
-    var token = "{{ Session::token() }}";
-    var parent = $(this).parent();
-    swal({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",            
-      type: 'warning',            
-      showCancelButton: true,           
-      confirmButtonColor: '#3085d6',            
-      cancelButtonColor: '#d33',            
-      confirmButtonText: 'Yes, delete it!',            
-      showLoaderOnConfirm: true,        
-       }
-         , 
-         function () {
-      $.ajax({
-        type: 'delete',                       
-        url: "{{URL::to('admin/delete_employee')}}",                           
-        data: "_token=" + token + "&id=" + id,                       
-        beforeSend: function () {
-          $("." + id).css("background-color", "#fb6c6c");
-        }
-        ,                        success: function (data1) {
-          if (data1 !=0)                                {
-            swal('Deleted!', 'Employee Deleted', 'success');
-            $("#customers2").load(window.location + " #customers2");
-          }
-          else                                {
-            $("#customers2").load(window.location + " #customers2");
-          }
-        }
-      }
-            );
-    }
-        );
-  }
-                          );
+</div>
+@include('layouts.footer')
+<div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="exampleModal1" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">
+                    Add New Target
+                </h5>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="target_form" autocomplete="off">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for=""> Employee ID:</label>
+                                <select name="emp_id" id="emp_id" class="form-control" required>
+                                    <option  value="">[Select Employee]</option>
+                                    @foreach($employees as $data)
+                                    <option value="{{$data->emp_id}}">{{$data->fname}} ({{$data->emp_id}})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="">Target Date:</label>
+                                <input class="form-control" placeholder="Enter Date" name="date"  type="date" id="date" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="">Amount:</label>
+                                <input class="form-control" placeholder="Enter Amount" name="amount"  type="number"  minlength="1" id="amount" required>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal" type="button"> Close</button>
+                        <button class="btn btn-primary add_target" type="submit"> Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script>
+         $('#datatable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "order": [[ 0, "desc" ]],
+        "ajax": '{{url("admin/target")}}',
+        "columns": [
+            { data: 'date', name: 'date' },
+            { data: 'emp_id', name: 'emp_id' },
+            { data: 'branch_id', name: 'branch_id' },
+            { data: 'day_sales_count', name: 'day_sales_count' },
+            { data: 'target_amt', name: 'target_amt' },
+            { data: 'carry_forward_amt', name: 'carry_forward_amt' },
+            { data: 'day_sales_value', name: 'day_sales_value' },
+            { data: 'total_target', name: 'total_target' },
+            { data: 'blance_target_amt', name: 'blance_target_amt' }
+        ]
+    });
+    $(document).on('click', '.add_target', function (e) {
+        e.preventDefault();
+        var token = "{{ Session::token() }}";
+        var emp_id= $('#emp_id').val();
+        var date= $('#date').val();
+        var amount= $('#amount').val();
+        $.ajax({
+            type: 'post',
+            url: "{{URL::to('admin/add_target')}}",
+            data: "_token=" + token + "&emp_id=" + emp_id+ "&date=" + date+ "&amount=" + amount,
+            dataType:"json",
+            beforeSend: function () {
+                $(".add_target").prop('disabled', true);
+            },
+            complete: function () {
+              $(".add_target").removeAttr('disabled');
+            },
+            success: function (data) {
+                if(data.status)
+                {
+                    $(".add_target").removeAttr('disabled');
+                    $("#target_form")[0].reset();
+                    $('.btn-secondary').trigger ('click');
+                    $('#datatable').DataTable().ajax.reload();
+                }  
+                else
+                  alert(data.message);
+            }
+        });
+    });
 </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js">
-</script>    

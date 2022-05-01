@@ -21,11 +21,12 @@ use App\Products;
 use App\Sales;
 use App\Invoice;
 use App\Purchase;
+use App\Sales_Exchange;
 use Barryvdh\DomPDF\Facade as PDF;
 use App\User;
-use CodeItNow\BarcodeBundle\Utils\BarcodeGenerator;
 use Carbon\Carbon;
 use DateTime;
+use Yajra\DataTables\DataTables;
 
 class HomeController extends Controller {
 
@@ -40,8 +41,12 @@ class HomeController extends Controller {
         $today_bill_value=Sales::whereDate('created_at', Carbon::today())->sum('payable_amount');
         $today_bill_source=Sales::whereDate('created_at', Carbon::today())->selectRaw('payment_mode,sum(total_amount) as total_amt')->groupBy('payment_mode')->get();
         $sales =Sales::whereDate('created_at', Carbon::today())->orderBy('id', 'DESC')->limit(10)->get();
+        $today_target_data=DB::table('employee_target as t')->select('e.fname','t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+        ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
+        ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
+        ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->get();
         return view('home', ['pcount' => $pcount, 'today_bill_value' => $today_bill_value, 
-        'today_bill_count' => $today_bill_count, 'datas' => $sales,'today_bill_source'=>$today_bill_source]);
+        'today_bill_count' => $today_bill_count, 'datas' => $sales,'today_bill_source'=>$today_bill_source,'today_target_data'=>$today_target_data]);
     }
     public function logout(Request $request) {
         Auth::logout();
@@ -78,7 +83,7 @@ class HomeController extends Controller {
     }
     public function employees() {
         $data = Branches::all();
-        $datas = Employees::where('status','Active')->get();
+        $datas = Employees::where('status','Active')->orderBy('fname')->get();
         return view('employees', ['datas' => $datas, 'branches' => $data]);
     }
     public function insert_employee(Request $request) {
@@ -165,7 +170,7 @@ class HomeController extends Controller {
 		   'email' => Input::get('email'), 'phone_no' => Input::get('phone_no'), 'address' => Input::get('address'),'password' => Input::get('password'),
 		   'dob' => Input::get('dob'), 'role' => Input::get('role'), 'salary' => Input::get('salary'), 'address' => Input::get('address'), 
 		   'permanent_address' => Input::get('permanent_address'), 'image' => $image, 'gender' => Input::get('gender'),'bank_name'=> Input::get('bank'),'bank_branch'=> Input::get('bank_branch'),'ac'=> Input::get('ac'),'ifsc'=> Input::get('ifsc'),'branch_id'=> Input::get('branch_id')]);
-            $update_user=User::where('emp_id',Input::get('id'))->update(['role' => Input::get('role'),'password' => Hash::make(Input::get('password')),
+           $update_user=User::where('emp_id',Input::get('emp_id'))->update(['role' => Input::get('role'),'password' => Hash::make(Input::get('password')),
 			'email' => Input::get('email'),'branch_id'=> Input::get('branch_id')]);
             Session::flash('success', 'Employee Details Updated Successfully');
             return redirect('admin/employees');
@@ -308,9 +313,24 @@ class HomeController extends Controller {
         $data = DB::table('products')->where('sku',$query)->where('approved_status',2)->where('quantity','>',0)->get();
         return Response::json($data, 200);
     }
-    public function sales() {        
-        $sales = Sales::where('status', 1)->orderBy('id','desc')->get();
-        return view('sales', ['datas' => $sales,]);
+    public function sales(Request $request) { 
+        if($request->ajax()){      
+            $sales = Sales::select(array(
+                'invoice_id', 'customer_name', 'payment_mode', 'payable_amount', 'balance','total_amount','created_at'
+            ));
+            return Datatables::of($sales)
+            ->addColumn('action', function($row){
+                $btn = '<a href="'.url('admin/invoice').'/'.$row->invoice_id.'" class="btn btn-primary" ><i class="os-icon os-icon-ui-49">View</i></a>';  
+                return $btn;
+            })
+            ->editColumn('created_at', function($data){
+                $formatedDate = date('d-m-Y H:i:s', strtotime($data->created_at)); 
+                return $formatedDate; 
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+        }
+        return view('sales');
     }
     public function hide_sales() {        
         $sales = Sales::where('status', 0)->latest()->get();
@@ -325,9 +345,10 @@ class HomeController extends Controller {
         return $data;
     }
     public function invoice($invoice_id) {
-        $invoice = Invoice::where('invoice_id', $invoice_id)->get();
-        $customer_data = Sales::where('invoice_id', $invoice_id)->get();
-        return view('invoice', ['datas' => $invoice, 'data' => $customer_data]);
+        $invoice = Invoice::where('invoice_id', $invoice_id)->orderBy('sku')->get();
+        $sales_data = Sales::where('invoice_id', $invoice_id)->get();
+        $sales_exchange_data = Sales_Exchange::where('invoice_id', $invoice_id)->orderBy('sku')->get();
+        return view('invoice', ['datas' => $invoice, 'data' => $sales_data,'sales_exchange_data'=>$sales_exchange_data]);
     }
     public function delete_invoice() {
         $dele_data = Sales::where('invoice_id', Input::get('id'))->delete();
@@ -408,7 +429,6 @@ class HomeController extends Controller {
         $final_data=array();
         $fm_date =Input::get('from_date');
         $to_date = Input::get('to_date');
-        //echo Input::get('emp_id');exit;
         $query = Sales::whereBetween('created_at', [$fm_date, $to_date])->where('status',1);
        if(Input::get('emp_id')!='all' and Input::get('branch')!='all') {
            $query = $query->where('emp_id',Input::get('emp_id'))->where('branch_id',Input::get('branch_id'));
@@ -439,7 +459,8 @@ class HomeController extends Controller {
 				foreach($skus as $sku)
 				{
 					$gst=products::where('sku',$sku->sku)->select('cgst')->first();
-					$total_gst=$total_gst+$gst->cgst*2;
+                    if($gst)
+					    $total_gst=$total_gst+$gst->cgst*2;
 				}
 			}
 			else 
@@ -447,7 +468,8 @@ class HomeController extends Controller {
 				foreach($skus as $sku)
 				{
 					$gst=products::where('sku',$sku->sku)->select('igst')->first();
-					$total_gst=$total_gst+$gst->igst;
+                    if($gst)
+					    $total_gst=$total_gst+$gst->igst;
 				}
 			}
 			$tax=round(100+$total_gst);
@@ -528,14 +550,22 @@ class HomeController extends Controller {
         $to_date = Input::get('to_date');
         $array=$this->category_array();
         $final_data=array();
-        $branches_wise=Branches::all();
+        if(Input::get('branch')!='all') {
+            $branches_wise=Branches::all()->where('branch_id',Input::get('branch_id'));
+         }
+         else
+            $branches_wise=Branches::all();
+         
         foreach($branches_wise as $branch)
         {              
             $array['Branch Name']=$branch->name;
             $category_value=DB::table('invoice as i')->join('products as p','p.sku','=','i.sku')->whereBetween('i.created_at', [$fm_date, $to_date])
             ->where('i.branch_id',$branch->branch_id)
-            ->selectRaw('p.cid as category,sum(i.price) as order_value,count(i.id) as order_count,sum(i.quantity) as order_qty')
-            ->groupBy('p.cid')->get();
+            ->selectRaw('p.cid as category,sum(i.price) as order_value,count(i.id) as order_count,sum(i.quantity) as order_qty');
+            if(Input::get('emp_id')!='all') {
+               $category_value->where('emp_id',Input::get('emp_id'));
+             }
+            $category_value= $category_value->groupBy('p.cid')->get();
             foreach($category_value as $value)
             {
                 if(array_key_exists($value->category,$array))
@@ -545,8 +575,8 @@ class HomeController extends Controller {
                 $array['Order Qty']=$array['Order Qty']+$value->order_qty;
                 $array['Order Value']= $array['Order Value']+$value->order_value;
             }
-             $final_data[]=$array;
-             $array=$this->category_array();
+            $final_data[]=$array;
+            $array=$this->category_array();
         }
         if(!empty($final_data))
         {
@@ -592,4 +622,52 @@ class HomeController extends Controller {
          //echo "<pre>";print_r($final_data);exit;
 	    return view('branch_status',['data'=>$final_data]);
 	}
+    public function target_report()
+    {
+       
+        $final_data=array();
+        $fm_date =Input::get('from_date');
+        $to_date = Input::get('to_date');
+        $today_target_data=DB::table('employee_target as t')->select('e.fname','t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+        ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
+        ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
+        ->whereBetween('t.date', [$fm_date, $to_date]);
+        if(Input::get('branch_id')!='all')
+        {
+            $today_target_data = $today_target_data->where('d.branch_id',Input::get('branch_id'));
+        }
+        if(Input::get('emp_id')!='all')
+        {
+            $today_target_data = $today_target_data->where('t.emp_id',Input::get('emp_id'));
+        }
+        $today_target_data= $today_target_data->groupBy('t.date','t.emp_id')->get();
+        foreach($today_target_data as $data)
+        {
+            $total_target=$data->target_amt+$data->carry_forward_amt;
+            if($data->day_sales_value > $total_target)
+                $balance=($data->day_sales_value-$total_target);
+            else
+                 $balance=($total_target-$data->day_sales_value);
+			$branch=Branches::where('branch_id',$data->branch_id)->select('name')->first();
+			$emp_name=Employees::where('emp_id',$data->emp_id)->select('fname')->first();
+            $final_data[]=array(
+                'Date'=>$data->date,
+                'Emp Name'=>$emp_name->fname."( ".$data->emp_id.' )',
+                'Branch'=>($data->branch_id !='-')? $branch->name."( ".$data->branch_id.' )' : $data->branch_id,
+                'Sales Count'=>$data->day_sales_count,
+                'Target Amount'=>$data->target_amt,
+                'Carry Forward Target'=>$data->carry_forward_amt,
+                'Total Target'=>$total_target,
+                "Balance Target"=>$balance
+		   ); 
+        }
+        if(!empty($final_data))
+        {
+            return (new FastExcel($final_data))->download('Employee-Target-'.$fm_date.'-to-'.$to_date.'.xlsx');
+        }
+        else
+        {
+            return redirect('admin/reports')->with('error','No Data Found');
+        }
+    }
 }

@@ -120,6 +120,7 @@ padding:3px;
 								<td class="item"><h2>S.No</h2></td>
 								<td class="product"><h2>Product</h2></td>
 								<td class="Hours"><h2>Qty</h2></td>
+								<td class="Hours"><h2>Unit Cost</h2></td>
 								<td class="Rate"><h2>Price</h2></td>
 							</tr>
                         	@foreach($products as $key=> $p)
@@ -127,31 +128,36 @@ padding:3px;
 							    <td><p class="itemno">{{$key+1}}</p></td>
 								<td><p class="itemname">{{$p->product_name}}</p></td>
 								<td><p class="itemtext">{{$p->quantity}}</p></td>
-								<td><p class="itemprice">Rs {{$p->price}}.00</p></td>
+								<td><p class="itemprice">{{$p->price}}.00</p></td>
+								<td><p class="itemprice">{{$p->price*$p->quantity}}.00</p></td>
 							</tr>
 							@endforeach
-							<!---<tr class="tabletitle">
-								<td></td>
-								<td></td>
-								<td class="Rate"><h2>Paid Amt</h2></td>
-								<td class="payment"><h2>Rs {{$payment_details->payable_amount}}.00</h2></td>
-							</tr>--->
 							<tr class="tabletitle">
+								<td></td>
+								<td></td>
+								<td></td>
+								<td class="Rate"><h2>Recevied Amt</h2></td>
+								<td class="payment"><h2>Rs {{$payment_details->payable_amount}}.00</h2></td>
+							</tr>
+							<tr class="tabletitle">
+								<td></td>
 								<td></td>
 								<td></td>
 								<td class="Rate"><h2>Total</h2></td>
 								<td class="payment"><h2>Rs {{$payment_details->total_amount}}.00</h2></td>
 							</tr>
-							<!---<tr class="tabletitle">
+							<tr class="tabletitle">
+								<td></td>
 								<td></td>
 								<td></td>
 								<td class="Rate"><h2>Balance</h2></td>
 								<td class="payment"><h2>Rs {{$payment_details->balance}}.00</h2></td>
-							</tr>---->
+							</tr>
 						</table>
 						<!---<table class="tabletitle">
 						<tr>
 						<th>#</th>
+						
 						<th>Amount</th>
 						<th>CGST</th>
 						<th>SGST</th>

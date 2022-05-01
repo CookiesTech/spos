@@ -1,10 +1,12 @@
-<? phpnamespaceApp\Http\Controllers;
+<?php 
+namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Input;
-use Response;
+
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Redirect;
+use Response;
 use Session;
 use Auth;
 use DB;
@@ -44,6 +46,10 @@ class ManagerController extends Controller
             ->get();
         return view('manager/sales', ['datas' => $datas]);
     }
+    public static function get_attendence_info($emp_id){        
+        $data=DB::table('attendance')->where('emp_id',$emp_id)->select('clock_out_date','clock_in_date')->orderBy('id','desc')->first();
+        return $data;
+   }
     public function manager_pos()
     {
         $datas = Products::where('status', 1)->get();

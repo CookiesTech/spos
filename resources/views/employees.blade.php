@@ -41,6 +41,8 @@
                 <th>                                    Branch                                
                 </th>                                
                 <th>                                    Emp Id                                
+                </th>    
+                <th>                                   Role                               
                 </th>                                
                 <th>                                    Status                                
                 </th>                                
@@ -58,7 +60,9 @@
                 <td>                                    {{ $data->branch_id }}                                
                 </td>                                
                 <td>                                    {{ $data->emp_id }}                                
-                </td>                                
+                </td> 
+                <td>                                    {{ ucfirst($data->role) }}                                
+                </td>                                     
                 <td>                                    {{ $data->status }}                                
                 </td>                                
                 <td class="row-actions">                                    
@@ -98,7 +102,8 @@
       </div>                
       <div class="modal-body">                    
         <form method="post" action="{{ url('admin/update_employee') }}">                        
-          <input type="hidden" name="id" value="{{ $data->id }}">                        {{ csrf_field() }}                        
+          <input type="hidden" name="id" value="{{ $data->id }}">  
+          <input type="hidden" name="emp_id" value="{{ $data->emp_id }}">                       {{ csrf_field() }}                        
           <div class="row">                            
             <div class="col-sm-12">                                
               <div class="form-group">                                    

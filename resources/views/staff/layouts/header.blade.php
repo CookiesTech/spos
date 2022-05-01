@@ -38,6 +38,9 @@
                 <li class="<?php if($da=="staff_timecards"){ echo  "active"; } ?>">
                     <a href="{{ url('staff/staff_timecards') }}"><span class="fa fa-files-o"></span>Time Cards</a>                       
                 </li>
+                <li class="<?php if($da=="sales_target"){ echo  "active"; } ?>">
+                    <a href="{{ url('staff/sales_target') }}"><span class="fa fa-files-o"></span>Sales Target</a>                       
+                </li>
             </ul>
             <!-- END X-NAVIGATION -->
         </div>

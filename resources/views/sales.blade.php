@@ -1,6 +1,7 @@
 @include('layouts.links')
 @include('layouts.header')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
 <style>
     #invoice{
         padding: 30px;
@@ -181,73 +182,20 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     <button style="margin: 5px;" class="btn btn-danger btn-xs delete-all" data-url="">Hide Selected</button>
-                    <table id="customers2" class="table datatable">
+                    <table id="datatable" class="table">
                         <thead>
                             <tr>
-                                <th>
-                                    S.No
-                                </th>
-                                <th>
-                                    Invoice ID
-                                </th>
-                                <th>
-                                    Customer Name
-                                </th>
-                                <th>
-                                    Payment Mode
-                                </th>
-                                 <th>
-                                    Cash Recevied
-                                </th>
-                                 <th>
-                                    Balance
-                                </th>
-                                 <th>
-                                    Total
-                                </th>
-                                <th>
-                                    Date
-                                </th>
-                                <th>
-                                    Actions
-                                </th>
+                                <th>Invoice ID </th>
+                                <th> Customer Name</th>
+                                <th> Payment Mode </th>
+                                 <th>Cash Recevied  </th>
+                                 <th>Balance </th>
+                                 <th>Total</th>
+                                <th>Date</th>
+                                <th>Actions</th>
                             </tr>
                              <tbody>
-                            <?php $i = 1; ?>
-                            @foreach($datas as $data)
-
-                            <tr id="tr_{{$data->id}}">
-
-                                <td>
-                                    {{ $i }}
-                                </td>
-                                <td>
-                                    {{ $data->invoice_id }}
-                                </td>
-                                <td>
-                                    {{ $data->customer_name }}
-                                </td>
-                                <td>
-                                    {{ $data->payment_mode }}
-                                </td>
-                                <td>
-                                    Rs{{rupee_format('%!i',$data->payable_amount)}}
-                                </td>
-                                 <td>
-                                    Rs{{rupee_format('%!i',$data->balance)}}
-                                </td>
-                                 <td>
-                                    Rs{{rupee_format('%!i',$data->total_amount)}}
-                                </td>
-                                <td>
-                                    {{ date('d/m/Y H:i:s a',strtotime($data->created_at)) }}
-                                </td>
-                                <td class="row-actions">
-                                    <a href="{{url('admin/invoice')}}/{{$data->invoice_id}}" class="btn btn-primary" ><i class="os-icon os-icon-ui-49">View</i></a>                             
-                                </td>
-                            </tr>
-                            <?php $i++; ?>
-                            @endforeach
+                            
                         </tbody>
                         </thead>
                     </table>                                      
@@ -259,9 +207,28 @@
 @include('layouts.footer')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+<!-- Datatables -->
+
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
+         $('#datatable').DataTable({
+        "processing": true,
+        "order": [[ 0, "desc" ]],
+        "serverSide": true,
+        "ajax": '{{url("admin/sales")}}',
+        "columns": [
+            { data: 'invoice_id', name: 'invoice_id' },
+            { data: 'customer_name', name: 'customer_name' },
+            { data: 'payment_mode', name: 'payment_mode' },
+            { data: 'payable_amount', name: 'payable_amount' },
+            { data: 'balance', name: 'balance' },
+            { data: 'total_amount', name: 'total_amount' },
+            { data: 'created_at', name: 'created_at' },
+            { data: 'action', name: 'action' },
+
+        ]
+    });
        $('.check_all').change(function(){
-           alert('hi');
          if($(this).is(':checked',true))  
          {
             $(".checkbox").prop('checked', true);  

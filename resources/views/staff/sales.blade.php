@@ -4,6 +4,7 @@ setlocale(LC_MONETARY, 'en_IN');
 @include('staff/layouts.links')
 @include('staff/layouts.header')
 <meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
 <style>
     #invoice{
         padding: 30px;
@@ -182,12 +183,9 @@ setlocale(LC_MONETARY, 'en_IN');
             <!-- START DATATABLE EXPORT -->
             <div class="panel panel-default">
                 <div class="panel-body">
-                 <table id="customers2" class="table datatable">
+                 <table id="datatable" class="table">
                         <thead>
                             <tr>
-                                <th>
-                                    S.No
-                                </th>
                                 <th>
                                     Invoice ID
                                 </th>
@@ -214,41 +212,7 @@ setlocale(LC_MONETARY, 'en_IN');
                                 </th>
                             </tr>
                              <tbody>
-                            <?php $i = 1; ?>
-                            @foreach($datas as $data)
-
-                            <tr id="tr_{{$data->id}}">
-
-                                <td>
-                                    {{ $i }}
-                                </td>
-                                <td>
-                                    {{ $data->invoice_id }}
-                                </td>
-                                <td>
-                                    {{ $data->customer_name }}
-                                </td>
-                                <td>
-                                    {{ $data->payment_mode }}
-                                </td>
-                                <td>
-                                    Rs{{rupee_format('%!i',$data->payable_amount)}}
-                                </td>
-                                 <td>
-                                    Rs{{rupee_format('%!i',$data->balance)}}
-                                </td>
-                                 <td>
-                                    Rs{{rupee_format('%!i',$data->total_amount)}}
-                                </td>
-                                <td>
-                                    {{ date('d/m/Y H:i:s a',strtotime($data->created_at)) }}
-                                </td>
-                                <td class="row-actions">
-                                    <a href="{{url('staff/invoice')}}/{{$data->invoice_id}}" class="btn btn-primary" ><i class="os-icon os-icon-ui-49">View</i></a>                             
-                                </td>
-                            </tr>
-                            <?php $i++; ?>
-                            @endforeach
+                           
                         </tbody>
                         </thead>
                     </table>                                 
@@ -258,3 +222,23 @@ setlocale(LC_MONETARY, 'en_IN');
     </div>
 </div>  
 @include('staff/layouts.footer')
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
+<script>
+        $('#datatable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "order": [[ 0, "desc" ]],
+        "ajax": '{{url("staff/staff_sales")}}',
+        "columns": [
+            { data: 'invoice_id', name: 'invoice_id' },
+            { data: 'customer_name', name: 'customer_name' },
+            { data: 'payment_mode', name: 'payment_mode' },
+            { data: 'payable_amount', name: 'payable_amount' },
+            { data: 'balance', name: 'balance' },
+            { data: 'total_amount', name: 'total_amount' },
+            { data: 'created_at', name: 'created_at' },
+            { data: 'action', name: 'action' },
+
+        ]
+    });
+</script>

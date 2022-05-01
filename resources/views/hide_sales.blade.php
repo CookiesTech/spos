@@ -262,7 +262,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
 <script>
        $('.check_all').change(function(){
-           alert('hi');
          if($(this).is(':checked',true))  
          {
             $(".checkbox").prop('checked', true);  

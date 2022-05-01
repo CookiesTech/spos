@@ -202,25 +202,25 @@
                 <div class="row contacts">
                     <div class="col invoice-to">
                         <div class="text-gray-light">INVOICE TO:<b>{{ $data[0]->customer_name }}</b></div>
-                        
-                        <div class="address">{{ $data[0]->phone }}</div>
-                        <div class="email">{{ $data[0]->payment_mode }}</div>
+                        <div class="address">PHone : {{ $data[0]->phone }}</div>
+                        <div class="email"> Payment Mode : <span class="badge badge-pill badge-info">{{ ucfirst($data[0]->payment_mode) }}<span></div>
                     </div>
                     <div class="col invoice-details">
                         <h1 class="invoice-id">BILL NO:{{ $data[0]->invoice_id }}</h1>
-                        <div class="date">Date of Invoice: {{ $data[0]->date }}</div>
+                        <div class="date">Date of Invoice: {{ date('d/m/Y H:i',strtotime($data[0]->created_at)) }}</div>
                     </div>
                 </div>
                 <table border="0" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <td class="item">S.No</td>
-                             <td class="item">SKU</td>
-                            <th class="text-left">Product Name</th>
-                            <th class="text-right">Price</th>
-                            <th class="text-right">Quantity</th>
-                            <th class="text-right">Total</th>
-                            <th class="text-right">Exchange</th>
+                            <td class="text-center">S.No</td>
+                             <td class="text-center ">SKU</td>
+                            <th class="text-center">Product Name</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-center">Exchange Qty</th>
+                            <th class="text-center">Total</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -234,18 +234,19 @@
                         
                         ?>
                         <tr>
-                            <td class="no">{{ $i }}</td>
+                            <td class="unit">{{ $i }}</td>
                               <td class="no">{{ $s->sku }}</td>
-                            <td class="text-left">
+                            <td class="text-center">
                                 {{ $s->product_name }}
                             </td>
                             <td class="unit">{{ $s->price }}</td>
                             <td class="qty">{{ $s->quantity }}</td>
+                            <td class="qty">{{ $s->exchange_qty }}</td>
                             <td class="total">{{ $s->amount }}</td>
-                            @if($s->exchange_type)
-                            <td><button type="button" class="btn btn-primary view_exchange" data-sku="{{$s->sku}}" data-id="{{$s->id}}" >Exchanged</button></td>
+                            @if($s->exchange_qty==$s->quantity)
+                            <td><button type="button" class="btn btn-danger"  disable>Exchanged</button></td>
                             @else
-                            <td><button type="button" class="btn btn-primary exchange" data-sku="{{$s->sku}}" data-id="{{$s->id}}" >Exchange</button></td>
+                            <td><button type="button" class="btn btn-primary exchange" data-invoice_id="{{ $s->invoice_id }}"  data-quantity="{{ $s->quantity-$s->exchange_qty }}" data-sku="{{$s->sku}}" data-id="{{$s->id}}" >Exchange</button></td>
                             @endif
                         </tr>
                         <?php $i++; ?>
@@ -253,17 +254,17 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="3"></td>
+                            <td colspan="4"></td>
                             <td colspan="3">SUBTOTAL</td>
                             <td>Rs. <?php echo $sub_total; ?></td>
                         </tr>
                         <tr>
-                            <td colspan="3"></td>
+                            <td colspan="4"></td>
                             <td colspan="3">Inclusive of GST</td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td colspan="3"></td>
+                            <td colspan="4"></td>
                             <td colspan="3">GRAND TOTAL</td>
                             <td>Rs. <?php echo  $sub_total; ?></td>
                         </tr>
@@ -274,29 +275,29 @@
                 <table border="0" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <td class="item">S.No</td>
-                            <td class="item">SKU</td>
-                            <th class="text-left">Exchange Date</th>
-                            <th class="text-right">Exchange Type</th>
-                            <th class="text-right">Exchange Process By</th>
-                            <th class="text-right">Commends</th>
+                            <td class="text-center">S.No</td>
+                            <td class="text-center">SKU</td>
+                            <th class="text-center">Exchange Date</th>
+                            <th class="text-center">Exchange Type</th>
+                            <th class="text-center">Exchange Process By</th>
+                            <th class="text-center">Exchange Qty</th>
+                            <th class="text-center">Commends</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $i = 1; @endphp
-                        @foreach($datas as $s)
-                        @if($s->exchange_type)
+                        @foreach($sales_exchange_data as $s)
                         <tr>
                             <td class="no">{{ $i }}</td>
-                              <td class="no">{{ $s->sku }}</td>
-                            <td class="text-left">
-                                {{ $s->exchange_date }}
+                              <td class="unit">{{ $s->sku }}</td>
+                            <td class="text-center">
+                            {{ date('d/m/Y H:i',strtotime($s->exchange_date)) }}
                             </td>
                             <td class="unit">{{ $s->exchange_type }}</td>
                             <td class="qty">{{ $s->exchange_process_by }}</td>
+                            <td class="qty">{{ $s->exchange_qty }}</td>
                             <td class="total">{{ $s->commends }}</td>
                         </tr>
-                        @endif
                         <?php $i++; ?>
                         @endforeach
                     </tbody>
@@ -317,11 +318,12 @@
                 <h5 class="modal-title" id="exampleModalLabel"> Exchange Process </h5> <button aria-label="Close" class="close" data-dismiss="modal" type="button"><span aria-hidden="true"> &times;</span></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{{url('staff/product_exchange')}}" autocomplete="off" enctype="multipart/form-data"> 
+                <form method="post" action="{{url('staff/product_exchange')}}"  id="exchange_form" autocomplete="off" > 
                 {{ csrf_field() }}
                     <div class="row">
                         <input type="hidden" name="sku" id="sku" required>
-                         <input type="hidden" name="id" id="id" required>
+                        <input type="hidden" name="id" id="id" required>
+                        <input type="hidden" name="invoice_id" id="invoice_id" required>
                         <div class="col-sm-6">
                             <div class="form-group">
                                  <label for="">Processed By:</label>
@@ -338,20 +340,28 @@
                             <select class="form-control" name="exchange_type" required>
                                 <option value="">[Select]</option>
                                 <option value="cash">Cash</option>
-                                <option vlaue="product"> Product</option>
+                                <option vlaue="product" selected> Product</option>
                             </select>
                              </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-sm-12">
+                        <div class="col-sm-4">
+                            <div class="form-group"> 
+                            <label for="">Quantity</label> <span class="saled_qty badge badge-pill badge-danger">0</span>
+                            <input type="number" class="form-control border"  id="exchange_qunatity" name="exchange_qunatity"   required></input> </div>
+                            
+                        </div>
+                        <div class="col-sm-8">
                             <div class="form-group"> 
                             <label for="">Commends:</label>
                             <textarea class="form-control"  name="commends" required></textarea> </div>
                         </div>
                     </div>
                       <br>
-                    <div class="modal-footer"> <button class="btn btn-secondary" data-dismiss="modal" type="button"> Close</button><button class="btn btn-primary" type="submit"> Save</button> </div>
+                    <div class="modal-footer">
+                         <button class="btn btn-secondary" data-dismiss="modal" type="button"> Close</button>
+                         <button class="btn btn-primary" type="submit"> Save</button> </div>
                 </form>
             </div>
         </div>
@@ -361,8 +371,23 @@
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script>
 $( ".exchange" ).click(function() {
+    $('#exchange_form').trigger("reset");
+    $('.saled_qty').text($(this).data('quantity'));
+    $('#invoice_id').val($(this).data("invoice_id"));
     $('#sku').val($(this).data("sku"));
     $('#id').val($(this).data("id"));
     $('#exampleModal1').modal('show');
 });
+//Saled Qty > Exchange Qty check
+$("form#exchange_form").submit(function(e) {
+    var exchange_qty=parseInt($('#exchange_qunatity').val());
+    var saled_qty=$('.saled_qty').text();
+    if(exchange_qty >saled_qty ||  exchange_qty==0)
+    {
+        $('#exchange_qunatity').addClass('border-danger');
+        return false;
+    }
+    else
+        $('#exchange_qunatity').removeClass('border-danger');
+ })
 </script>

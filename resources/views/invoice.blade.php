@@ -204,25 +204,24 @@
                 <div class="row contacts">
                     <div class="col invoice-to">
                         <div class="text-gray-light">INVOICE TO:<b>{{ $data[0]->customer_name }}</b></div>
-                        
-                        <div class="address">{{ $data[0]->phone }}</div>
-                        <div class="email">{{ $data[0]->payment_mode }}</div>
+                        <div class="address">PHone : {{ $data[0]->phone }}</div>
+                        <div class="email"> Payment Mode : <span class="badge badge-pill badge-info">{{ ucfirst($data[0]->payment_mode) }}<span></div>
                     </div>
                     <div class="col invoice-details">
-                        <h1 class="invoice-id">BILL NO:{{ $data[0]->invoice_id }}</h1>
-                        <div class="date">Date of Invoice: {{ $data[0]->date }}</div>
+                    <h1 class="invoice-id">BILL NO:{{ $data[0]->invoice_id }}</h1>
+                        <div class="date">Date of Invoice: {{ date('d/m/Y H:i',strtotime($data[0]->created_at)) }}</div>
                     </div>
                 </div>
                 <table border="0" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <td class="item">S.No</td>
-                             <td class="item">SKU</td>
-                            <th class="text-left">Product Name</th>
-                            <th class="text-right">Price</th>
-                            <th class="text-right">Quantity</th>
-                            <th class="text-right">Total</th>
-                            <th class="text-right">Exchange</th>
+                            <td class="item text-center">S.No</td>
+                            <td class="item text-center">SKU</td>
+                            <th class="text-center">Product Name</th>
+                            <th class="text-center">Price</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-center">Exchange Qty</th>
+                            <th class="text-center">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -236,15 +235,15 @@
                         
                         ?>
                         <tr>
-                            <td class="no">{{ $i }}</td>
+                            <td class="unit">{{ $i }}</td>
                               <td class="no">{{ $s->sku }}</td>
                             <td class="text-left">
                                 {{ $s->product_name }}
                             </td>
                             <td class="unit">{{ $s->price }}</td>
                             <td class="qty">{{ $s->quantity }}</td>
+                            <td class="qty">{{ $s->exchange_qty }}</td>
                             <td class="total">{{ $s->amount }}</td>
-                            <td><button type="button" class="btn btn-primary exchange" data-sku="{{$s->sku}}" data-id="{{$s->id}}" >Exchange</button></td>
                         </tr>
                         <?php $i++; ?>
                         @endforeach
@@ -272,29 +271,29 @@
                 <table border="0" cellspacing="0" cellpadding="0">
                     <thead>
                         <tr>
-                            <td class="item">S.No</td>
-                            <td class="item">SKU</td>
-                            <th class="text-left">Exchange Date</th>
-                            <th class="text-right">Exchange Type</th>
-                            <th class="text-right">Exchange Process By</th>
-                            <th class="text-right">Commends</th>
+                            <td class="text-center">S.No</td>
+                            <td class="text-center">SKU</td>
+                            <th class="text-center">Exchange Date</th>
+                            <th class="text-center">Exchange Type</th>
+                            <th class="text-center">Exchange Process By</th>
+                            <th class="text-center">Exchange Qty</th>
+                            <th class="text-center">Commends</th>
                         </tr>
                     </thead>
                     <tbody>
                         @php $i = 1; @endphp
-                        @foreach($datas as $s)
-                        @if($s->exchange_type)
+                        @foreach($sales_exchange_data as $s)
                         <tr>
                             <td class="no">{{ $i }}</td>
-                              <td class="no">{{ $s->sku }}</td>
-                            <td class="text-left">
-                                {{ $s->exchange_date }}
+                              <td class="unit">{{ $s->sku }}</td>
+                            <td class="text-center">
+                            {{ date('d/m/Y H:i',strtotime($s->exchange_date)) }}
                             </td>
                             <td class="unit">{{ $s->exchange_type }}</td>
                             <td class="qty">{{ $s->exchange_process_by }}</td>
+                            <td class="qty">{{ $s->exchange_qty }}</td>
                             <td class="total">{{ $s->commends }}</td>
                         </tr>
-                        @endif
                         <?php $i++; ?>
                         @endforeach
                     </tbody>

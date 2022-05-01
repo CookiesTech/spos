@@ -16,10 +16,13 @@ use App\Category;
 use App\Products;
 use App\Sales;
 use App\Invoice;
+use App\Sales_Exchange;
 use App\Purchase;
 use App\User;
 use PDF;
 use Carbon\Carbon;
+use Yajra\DataTables\DataTables;
+
 class StaffController extends Controller
 {
     public function __construct()
@@ -34,13 +37,32 @@ class StaffController extends Controller
 		->selectRaw('payment_mode,sum(total_amount) as total_amt')->groupBy('payment_mode')->get();
         $datas=Sales::where('branch_id',Auth::user()->branch_id)->whereDate('created_at', Carbon::today())->orderby('id','desc')
 		->where('status',1)->limit(10)->get();
+        $today_target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+        ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
+        ->where('t.emp_id',Auth::user()->emp_id)
+        ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->first();
        return view('staff/home',['datas' => $datas,'today_bill_count'=>$today_bill_count,'today_bill_value'=>$today_bill_value,
-	   'today_bill_source'=>$today_bill_source]);
+	   'today_bill_source'=>$today_bill_source,'today_target_data'=>$today_target_data]);
     }
-    public function staff_sales()
+    public function staff_sales(Request $request)
     {
-        $datas=Sales::where('branch_id',Auth::user()->branch_id)->orderby('id','desc')->where('status',1)->get();
-        return view('staff/sales',['datas' => $datas]);
+        if($request->ajax()){      
+            $sales = Sales::select(array(
+                'invoice_id', 'customer_name', 'payment_mode', 'payable_amount', 'balance','total_amount','created_at'
+            ))->where('branch_id',Auth::user()->branch_id)->orderby('id','desc')->where('status',1)->get();
+            return Datatables::of($sales)
+            ->addColumn('action', function($row){
+                $btn = '<a href="'.url('staff/invoice').'/'.$row->invoice_id.'" class="btn btn-primary" ><i class="os-icon os-icon-ui-49">View</i></a>';  
+                return $btn;
+            })
+            ->editColumn('created_at', function($data){
+                $formatedDate = date('d-m-Y H:i:s', strtotime($data->created_at)); 
+                return $formatedDate; 
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+        }
+        return view('staff/sales');
     }
     public function products(){
         $branch_id=Auth::user()->branch_id;
@@ -78,7 +100,6 @@ class StaffController extends Controller
     public function staff_pos()
     {
         $branch_employees=User::where('branch_id',Auth::user()->branch_id)->where('status',1)->select('emp_id','name')->get(); 
-       //echo "<pre>"; print_r($branch_employees);exit;
         return view('staff/pos', ['branch_employees' => $branch_employees]);
     }
     public function create_invoice_staff(Request $request)  
@@ -174,7 +195,6 @@ class StaffController extends Controller
 		  ->selectRaw('sum(i.price * i.quantity) as total_amt,sum(p.igst) as total_igst,sum(p.cgst) as total_cgst,sum(p.sgst) as total_sgst,igst,cgst,sgst');
 		  $query = ($data['in_tamilnadu']->in_tamilnadu=="yes") ?  $query->groupBy('p.cgst') :   $query->groupBy('p.igst');
           $data['tax_data']= $query->get();
-		  //echo "<pre>";dd($data);exit;
           if($data['payment_details'])
           {
               return view('staff/print-bill',$data);
@@ -201,12 +221,13 @@ class StaffController extends Controller
 	}
 	public function invoice($invoice_id) 
 	{
-        $invoice = Invoice::where('invoice_id', $invoice_id)->get();
+        $invoice = Invoice::where('invoice_id', $invoice_id)->orderBy('sku')->get();
         if($invoice)
         {
             $branch_employees=User::where('branch_id',Auth::user()->branch_id)->select('emp_id','name')->get(); 
-            $customer_data = Sales::where('invoice_id', $invoice_id)->get();
-            return view('staff/invoice', ['datas' => $invoice, 'data' => $customer_data,'branch_employees' => $branch_employees]);
+            $sale_data = Sales::where('invoice_id', $invoice_id)->get();
+            $sales_exchange_data = Sales_Exchange::where('invoice_id', $invoice_id)->orderBy('sku')->get();
+            return view('staff/invoice', ['datas' => $invoice, 'data' => $sale_data,'sales_exchange_data'=>$sales_exchange_data,'branch_employees' => $branch_employees]);
         }
         else
         {
@@ -215,18 +236,51 @@ class StaffController extends Controller
     }
     public function product_exchange(Request $request)
     {
-        $exchange=Invoice::where('id', $request->post('id'))->where('exchange_type',null)->update(['exchange_date'=>date('Y-m-d h:i:s'),'exchange_type'=>$request->post('exchange_type'),
-        'exchange_process_by'=>$request->post('exchange_process_by'),'commends'=>$request->post('commends')]);
-        if($exchange)
+        $data = new Sales_Exchange();
+        $data->invoice_id = $request->post('invoice_id');
+        $data->sku = $request->post('sku');
+        $data->branch_id = Auth::user()->branch_id;
+        $data->exchange_process_by =$request->post('exchange_process_by');
+        $data->exchange_date = date('Y-m-d h:i:s');
+        $data->exchange_type = $request->post('exchange_type');
+        $data->commends = $request->post('commends');
+        $data->exchange_qty = $request->post('exchange_qunatity');
+        if($data->save())
         {
-           $product_qty=Invoice::where('id', $request->post('id'))->select('quantity','sku')->first();
-           Products::where('sku',$product_qty->sku)->increment('quantity',$product_qty->quantity);
-           return Redirect::back()->with('success','Exchange Processed Successfully'); 
+            $exchange=Invoice::where('id', $request->post('id'))->increment('exchange_qty',$request->post('exchange_qunatity'));
+            $product_qty=Invoice::where('id', $request->post('id'))->select('quantity','sku')->first();
+            Products::where('sku',$product_qty->sku)->increment('quantity',$request->post('exchange_qunatity'));
+            return Redirect::back()->with('success','Exchange Processed Successfully'); 
         }
         else
         {
             return Redirect::back()->with('error','Something is went to wrong');
         }
+    }
+    public function sales_target(Request $request)
+    {
+        if($request->ajax()){  
+            $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+            ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
+            ->where('t.emp_id', Auth::user()->emp_id)
+            ->whereMonth('t.date', date('m'))->groupBy('t.date','t.emp_id')->get();
+            return Datatables::of($target_data)
+            ->addColumn('total_target', function($row){
+                return $row->target_amt+$row->carry_forward_amt;
+            })
+            ->addColumn('blance_target_amt', function($row){
+                $balance=0;
+                $total_target=$row->target_amt+$row->carry_forward_amt;
+                if($row->day_sales_value > $total_target)
+                    $btn='<span class="label label-success">'.($row->day_sales_value-$total_target).'</span>';
+                else
+                    $btn='<span class="label label-danger">'.($total_target-$row->day_sales_value).'</span>';
+                return $btn;
+            })
+            ->rawColumns(['blance_target_amt','total_target'])
+            ->make(true);
+        }
+        return view('staff/sales_target');
     }
 
 }
