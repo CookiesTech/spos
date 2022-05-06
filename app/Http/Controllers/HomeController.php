@@ -42,7 +42,7 @@ class HomeController extends Controller {
         $today_bill_source=Sales::whereDate('created_at', Carbon::today())->selectRaw('payment_mode,sum(total_amount) as total_amt')->groupBy('payment_mode')->get();
         $sales =Sales::whereDate('created_at', Carbon::today())->orderBy('id', 'DESC')->limit(10)->get();
         $today_target_data=DB::table('employee_target as t')->select('e.fname','t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
-        ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
+        ->join('employee_day_sale as d','d.invoice_date','=','t.date')
         ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
         ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->get();
         return view('home', ['pcount' => $pcount, 'today_bill_value' => $today_bill_value, 

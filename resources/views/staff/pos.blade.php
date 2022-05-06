@@ -426,7 +426,8 @@
                   <div class="col-md-6 ">                                                        
                     <b>Qty:</b>                                                        
                     <input type ='text' style="width:100%"  readonly name='totalquantity' id='totalquantity' >                                                    
-                  </div>                                                    
+                  </div>  
+                  <br>                                                  
                   <div class="col-md-6">                                                    
                     <label>Confirm:
                     </label>														

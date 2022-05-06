@@ -154,8 +154,9 @@ setlocale(LC_MONETARY, 'en_IN');
         </div>
     </div>
     <!---Today Target Amount----->
+    @if(!empty($today_target_data))
     <div class="bootdey">
-<div class="row bootstrap snippets bootdey">
+    <div class="row bootstrap snippets bootdey">
     <div class="col-md-3">
       <div class="box box-widget widget-user-2">
       <div class="widget-user-header bg-yellow">
@@ -171,10 +172,10 @@ setlocale(LC_MONETARY, 'en_IN');
             <?php
                 $balance=0;
                 $total_target=$today_target_data->target_amt+$today_target_data->carry_forward_amt;
-                if($today_target_data->day_sales_value > $total_target)
-                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($today_target_data->day_sales_value-$total_target).'</span></a></li>';
+                if($total_target > $today_target_data->day_sales_value)
+                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($total_target-$today_target_data->day_sales_value).'</span></a></li>';
                 else
-                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-green">'.($total_target-$today_target_data->day_sales_value).'</span></a></li>';
+                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-green">'.($today_target_data->day_sales_value-$total_target).'</span></a></li>';
             ?>
             <?php echo $btn;?>
           </ul>
@@ -182,6 +183,7 @@ setlocale(LC_MONETARY, 'en_IN');
       </div>
     </div>
 </div>
+@endif
 </div>
     <div class="row">
         <div class="col-md-12">

@@ -140,6 +140,7 @@
         </div>
     </div>
     <!---Today Target Amount----->
+    @if($today_target_data)
     <div class="bootdey">
 <div class="row bootstrap snippets bootdey">
 @foreach($today_target_data as $data)
@@ -158,10 +159,10 @@
             <?php
                 $balance=0;
                 $total_target=$data->target_amt+$data->carry_forward_amt;
-                if($data->day_sales_value > $total_target)
-                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($data->day_sales_value-$total_target).'</span></a></li>';
+                if($total_target > $data->day_sales_value)
+                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($total_target-$data->day_sales_value).'</span></a></li>';
                 else
-                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-green">'.($total_target-$data->day_sales_value).'</span></a></li>';
+                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-green">'.($data->day_sales_value-$total_target).'</span></a></li>';
             ?>
             <?php echo $btn;?>
           </ul>
@@ -171,6 +172,7 @@
     @endforeach
 </div>
 </div>
+@endif
     <div class="row">
         <div class="col-md-12">
             <div class="panel-title-box">

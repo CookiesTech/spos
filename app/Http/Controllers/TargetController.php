@@ -28,7 +28,9 @@ class TargetController extends Controller {
     {
         $data['employees']=DB::table('employees')->where('status','Active')->get();
         if($request->ajax()){  
-            $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')->whereMonth('t.date', date('m'))->groupBy('t.date','t.emp_id')->get();
+            $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+            ->join('employee_day_sale as d','d.invoice_date','=','t.date')
+            ->whereMonth('d.invoice_date', date('m'))->groupBy('t.date','d.emp_id')->get();
             return Datatables::of($target_data)
             ->addColumn('total_target', function($row){
                 return $row->target_amt+$row->carry_forward_amt;
