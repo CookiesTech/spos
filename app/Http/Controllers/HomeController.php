@@ -231,7 +231,39 @@ class HomeController extends Controller {
         $data1 = Category::count();
         return Response::json($data1, 200);
     }
-    public function products() {
+    public function products(Request $request) {
+        if($request->ajax()){      
+            $products = Products::select(array(
+                'product_name', 'quantity', 'discount_price', 'sku', 'cid','branch_id','stock_status','approved_status','comments','id',
+            ))->where('status', 1);
+            return Datatables::of($products)
+            ->addColumn('action', function($data){
+                $btn = '<button class="btn btn-primary" data-target="#edit'. $data->id.'" data-toggle="modal" type="button"><i class="os-icon os-icon-ui-49">Edit</i></button> 
+                <button class="btn btn-primary delete" type="button" data-id="'. $data->id.'"><i class="os-icon os-icon-ui-15">Delete</i></button>';  
+                return $btn;
+            })
+            ->addColumn('checkbox', function($data){
+                $btn = '<input type="checkbox" class="checkbox" value="'.$data->id.'" name="id[]">';  
+                return $btn;
+            })
+            ->editColumn('stock_status', function($data){
+                $btn = ($data->quantity< 2) ?'<span class="label label-danger">'.$data->stock_status.'</span>' : '<span class="label label-success">'.$data->stock_status.'</span>';  
+                return $btn;
+            })
+            ->editColumn('branch_id', function($data){
+                $branch = $this->get_branch_name($data->branch_id);
+                return $branch->name.'('.$data->branch_id.')';
+            })
+            ->editColumn('approved_status', function($data){ 
+                $btn="";
+                if($data->approved_status==0 and $data->comments != null) { $btn='<a href=""> <span class="label label-danger" id="approve_status" data-id="'.$data->id.'">Not Approved</span></a>'; } 
+                else if($data->approved_status==2){  $btn='<span class="label label-success">Approved</span>';}
+                else {  $btn=' <span class="label label-danger">Pending</span>';}
+                return $btn; 
+            })
+            ->rawColumns(['action','stock_status','approved_status','checkbox','branch_id'])
+            ->make(true);
+        }
         $datas = Products::where('status', 1)->orderBy('id', 'desc')->get();
         $category = Category::where('status', 1)->get();
         $branches = Branches::all();

@@ -1,4 +1,5 @@
 @include('layouts.links')
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
 <style>
     .form-control {
   height: 30px;
@@ -40,11 +41,12 @@
             <!-- START DATATABLE EXPORT -->
             <div class="panel panel-default"> <input type="checkbox" class="check_all" style="margin-left:20px;"><span class=""> Select All</span>
                 <div class="panel-body"> <button class="btn btn-primary" data-target="#exampleModal1" data-toggle="modal" type="button" style="float:right">Add New Product</button><br><br>
-                    <form method="post" action="{{ url('admin/print_barcodes') }}" id="barcode"> <button class="btn btn-primary btn-rounded  print" style="margin-left:500px;" title="">Print</button> {{ csrf_field() }}
-                        <table id="customers2" class="table datatable">
+                    <form method="post" action="{{ url('admin/print_barcodes') }}" id="barcode"> 
+                        <button class="btn btn-primary btn-rounded  print" style="margin-left:500px;" title="">Print</button>
+                         {{ csrf_field() }}
+                        <table id="datatable" class="table table-border">
                             <thead>
                                 <tr>
-                                    <th> S.No </th>
                                     <th>Select</th>
                                     <th> Product Name </th>
                                     <th> Quantity </th>
@@ -57,21 +59,9 @@
                                     <th> Actions </th>
                                 </tr>
                             </thead>
-                            <tbody> <?php $i = 1; ?> @foreach($datas as $data)
-                            <?php $branch = \App\Http\Controllers\HomeController::get_branch_name($data->branch_id) ?>
-                            <tr class="{{$data->id}}">
-                                    <td> {{ $i }} </td>
-                                    <td><input type="checkbox" class="checkbox" value="{{$data->id}}" name="id[]"></td>
-                                    <td> {{ $data->product_name }} </td>
-                                    <td> {{ $data->quantity }} </td>
-                                    <td> {{ $data->discount_price }} </td>
-                                    <td> {{ $data->sku }} </td>
-                                    <td> {{ $data->cid }} </td>
-                                    <td> {{ $branch->name }} </td>
-                                    <td> @if($data->quantity< 2) <span class="label label-danger">{{ $data->stock_status }}</span> @else <span class="label label-success">{{ $data->stock_status }}</span> @endif </td>
-                                    <td> @if($data->approved_status==0 and $data->comments != null) <a href=""> <span class="label label-danger" id="approve_status" data-id="{{ $data->id }}">Not Approved</span></a> @elseif($data->approved_status==2) <span class="label label-success">Approved</span> @else <span class="label label-danger">Pending</span> @endif </td>
-                                    <td class="row-actions"> <button class="btn btn-primary" data-target="#edit{{ $data->id  }}" data-toggle="modal" type="button"><i class="os-icon os-icon-ui-49">Edit</i></button> <button class="btn btn-primary delete" type="button" data-id="{{$data->id}}"><i class="os-icon os-icon-ui-15">Delete</i></button> </td>
-                                </tr> <?php $i++; ?> @endforeach </tbody>
+                            <tbody>
+
+                            </tbody>
                         </table>
                         
                     </form>
@@ -83,7 +73,10 @@
 </div> <!-- END PAGE CONTENT -->
 </div>
 </div>
-</div>@include('layouts.footer')@foreach($datas as $data)<div aria-hidden="true" aria-labelledby="" class="modal fade" id="edit{{ $data->id }}" role="dialog" tabindex="-1">
+</div>
+  @include('layouts.footer')
+  @foreach($datas as $data)
+  <div aria-hidden="true" aria-labelledby="" class="modal fade" id="edit{{ $data->id }}" role="dialog" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -220,7 +213,27 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
+         $('#datatable').DataTable({
+        "processing": true,
+        "order": [[ 0, "desc" ]],
+        "serverSide": true,
+        "ajax": '{{url("admin/products")}}',
+        "columns": [
+            { data: 'checkbox', name: 'checkbox' },
+            { data: 'product_name', name: 'product_name' },
+            { data: 'quantity', name: 'quantity' },
+            { data: 'discount_price', name: 'discount_price' },
+            { data: 'sku', name: 'sku' },
+            { data: 'cid', name: 'cid' },
+            { data: 'branch_id', name: 'branch_id' },
+            { data: 'stock_status', name: 'stock_status' },
+            { data: 'approved_status', name: 'approved_status' },
+            { data: 'action', name: 'action' },
+
+        ]
+    });
     $(document).on('click', '.delete', function(e) {
        e.preventDefault();
        var id = $(this).data('id');
@@ -294,6 +307,21 @@
            });
        });
    });
+//    //EDIt PRODUCT
+//    $(document).on('click', '.edit_product', function(e) {
+//        e.preventDefault();
+//        var id = $(this).data('id');
+//        var token = "{{ Session::token() }}";
+//        var parent = $(this).parent();
+//         $.ajax({
+//             type: 'post',
+//             url: "{{URL::to('admin/get_product_by_id')}}",
+//             data: "_token=" + token + "&id=" + id,
+//             success: function(data1) {
+
+//             }
+//        });
+//    });
    $('.check_all').click(function() {
        if ($(this).is(':checked', true)) {
            $(".checkbox").prop('checked', true);
@@ -309,6 +337,7 @@
        }
    });
    $('.print').on('click', function(e) {
+       e.preventDefault();
        var idsArr = [];
        $(".checkbox:checked").each(function() {
            idsArr.push($(this).attr('data-id'));
@@ -317,6 +346,7 @@
            alert("Please select atleast one record to delete.");
            return false;
        } else {
+          
            $("#barcode").submit();
        }
    });

@@ -96,7 +96,7 @@
 </div>
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
-         $('#datatable').DataTable({
+     $('#datatable').DataTable({
         "processing": true,
         "serverSide": true,
         "order": [[ 0, "desc" ]],
