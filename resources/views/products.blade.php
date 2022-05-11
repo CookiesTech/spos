@@ -75,82 +75,89 @@
 </div>
 </div>
   @include('layouts.footer')
-  @foreach($datas as $data)
-  <div aria-hidden="true" aria-labelledby="" class="modal fade" id="edit{{ $data->id }}" role="dialog" tabindex="-1">
+  <div aria-hidden="true" aria-labelledby="" class="modal fade" id="product_edit" role="dialog" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel"> Edit Product </h5> <button aria-label="Close" class="close" data-dismiss="modal" type="button"><span aria-hidden="true"> &times;</span></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{{url('admin/update_product')}}" autocomplete="off" enctype="multipart/form-data"> <input type="hidden" name="id" value="{{ $data->id }}"> {{ csrf_field() }}
+                <form method="post" autocomplete="off"  id="product_edit_form"enctype="multipart/form-data"> 
+                    <input type="hidden" name="id" value="" id="hidden_id"> 
+                    {{ csrf_field() }}
                     <div class="row">
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for=""> Branch:</label> <select class="form-control" name="branch_id" required>
+                            <div class="form-group"> <label for=""> Branch:</label> 
+                            <select class="form-control" name="branch_id" required id="branch_id">
                                     <option value="">[..Select Brach..]</option> 
                                     @foreach($branches as $br) 
-                                    <option value="{{ $br->branch_id }}" {{ ($br->branch_id == $data->branch_id) ? 'selected' : '' }}> {{ $br->name }} </option>
+                                    <option value="{{ $br->branch_id }}"> {{ $br->name }} </option>
                                     @endforeach
                                 </select> </div>
                         </div>
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for=""> Category:</label> <select class="form-control" name="cid" required>
-                                    <option value="">[..Select Category..]</option> @foreach($categories as $de) <option value="{{ $de->name }}" {{ $de->name === $data->cid? 'selected' : '' }}> {{ $de->name }} </option> @endforeach
+                            <div class="form-group"> <label for=""> Category:</label> 
+                            <select class="form-control" name="cid" required id="cid">
+                                    <option value="">[..Select Category..]</option> 
+                                    @foreach($categories as $de) 
+                                        <option value="{{ $de->name }}" > {{ $de->name }} </option>
+                                     @endforeach
                                 </select> </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for=""> Product Name:</label><input class="form-control" value="{{ $data->product_name }}" name="product_name" type="text" required> </div>
+                            <div class="form-group"> <label for=""> Product Name:</label>
+                            <input class="form-control"  name="product_name" type="text" required  id="product_name"> </div>
                         </div>
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for="">Price:</label><input class="form-control" value="{{ $data->discount_price }}" name="discount_price" type="number" required> </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group"> <label for="">Quantity:</label><input class="form-control" value="{{ $data->quantity }}" name="quantity" type="number" required> </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="form-group"> <label for="">Sku:</label><input class="form-control" value="{{ $data->sku }}" name="sku" type="text" required readonly> </div>
+                            <div class="form-group"> <label for="">Price:</label><input class="form-control"  id="discount_price" name="discount_price" type="number" required> </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for="">SGST:</label><input class="form-control" value="{{ $data->sgst }}" placeholder="Enter SGST" name="sgst" type="text" > </div>
+                            <div class="form-group"> <label for="">Quantity:</label><input class="form-control"  id="quantity" name="quantity" type="number" required> </div>
                         </div>
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for="">IGST:</label><input class="form-control" value="{{ $data->igst }}" placeholder="Enter IGST" name="igst" type="text" > </div>
+                            <div class="form-group"> <label for="">Sku:</label><input class="form-control" id="sku" name="sku" type="text" required readonly> </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-6">
-                            <div class="form-group"> <label for="">CGST:</label><input class="form-control" value="{{ $data->cgst }}" placeholder="Enter CGST" name="cgst" type="text" > </div>
+                            <div class="form-group"> <label for="">SGST:</label><input class="form-control" id="sgst" placeholder="Enter SGST" name="sgst" type="text" > </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group"> <label for="">IGST:</label><input class="form-control" id="igst" placeholder="Enter IGST" name="igst" type="text" > </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group"> <label for="">CGST:</label><input class="form-control"  id="cgst" placeholder="Enter CGST" name="cgst" type="text" > </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group"> 
                             <label for=""> Status Approve:</label>
-                            <select name="status" required class="form-control">
+                            <select name="status" required class="form-control" id="status">
                                <option value="">[Select]</option>
-                               <option value="2" {{($data->approved_status=='2') ? "selected" :"" }}> Approved</option>
-                               <option value="0" {{($data->approved_status=='0') ? "selected" :"" }}> Not Approved</option>
+                               <option value="2" > Approved</option>
+                               <option value="0"> Not Approved</option>
                             </select>
                             </div>
                         </div>
                     </div>
-                    @if($data->comments) 
                     <div class="row">
                         <div class="col-sm-12">
-                            <div class="form-group"> <label for=""> Comments:</label><textarea class="form-control" readonly style="color: black;" rows="3">{{ $data->comments }}</textarea> </div>
+                            <div class="form-group"> <label for=""> Comments:</label>
+                            <textarea class="form-control" readonly style="color: black;" rows="3" id="comments"></textarea> </div>
                         </div>
                     </div>
-                    @endif <br> <br>
+                     <br> <br>
                     <div class="modal-footer"> <button class="btn btn-primary" data-dismiss="modal" type="button"> Close</button><button class="btn btn-primary" type="submit"> Save</button> </div>
                 </form>
             </div>
         </div>
     </div>
-</div>@endforeach
+</div>
 <!-- ADD  -->
 <div aria-hidden="true" aria-labelledby="exampleModalLabel" class="modal fade" id="exampleModal1" role="dialog" tabindex="-1">
     <div class="modal-dialog" role="document">
@@ -159,7 +166,8 @@
                 <h5 class="modal-title" id="exampleModalLabel"> Add New Product </h5> <button aria-label="Close" class="close" data-dismiss="modal" type="button"><span aria-hidden="true"> &times;</span></button>
             </div>
             <div class="modal-body">
-                <form method="post" action="{{url('admin/insert_product')}}" autocomplete="off" enctype="multipart/form-data"> {{ csrf_field() }}
+                <form method="post" autocomplete="off" enctype="multipart/form-data" id="insert_product"> 
+                    {{ csrf_field() }}
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="form-group"> <label for=""> Branch:</label> <select class="form-control" name="branch_id" required>
@@ -215,13 +223,17 @@
 </div>
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>
-         $('#datatable').DataTable({
+    var type= "{{$type}}";
+        $('#datatable').DataTable({
         "processing": true,
         "order": [[ 0, "desc" ]],
         "serverSide": true,
-        "ajax": '{{url("admin/products")}}',
+        "ajax": {
+            "url": "{{url('admin/products')}}"+'/'+type,
+            "type": "GET"
+        },
         "columns": [
-            { data: 'checkbox', name: 'checkbox' },
+            { data: 'checkbox', name: 'checkbox',orderable: false},
             { data: 'product_name', name: 'product_name' },
             { data: 'quantity', name: 'quantity' },
             { data: 'discount_price', name: 'discount_price' },
@@ -230,7 +242,7 @@
             { data: 'branch_id', name: 'branch_id' },
             { data: 'stock_status', name: 'stock_status' },
             { data: 'approved_status', name: 'approved_status' },
-            { data: 'action', name: 'action' },
+            { data: 'action', name: 'action',orderable: false},
 
         ]
     });
@@ -253,19 +265,14 @@
                type: 'delete',
                url: "{{URL::to('admin/delete_product')}}",
                data: "_token=" + token + "&id=" + id,
-               beforeSend: function() {
-                   $("." + id).css("background-color", "#fb6c6c");
-               },
                success: function(data1) {
                    parent.slideUp(300, function() {
                        if (data1 == 0) {
                            swal('Deleted!', 'Product Deleted', 'success');
-                           $("." + id).remove();
-                           $("#customers2 tbody").html("<tr><td colspan='8' align='center'>Nodata </td></tr>");
-                           $("#customers2_info").html("Showing 0 entries");
+                           $('#datatable').DataTable().ajax.reload(null,false);
                        } else {
                            $("." + id).remove();
-                           $("#customers2_info").html("Showing 1 to " + data1 + " of " + data1 + " entries");
+                           $('#datatable').DataTable().ajax.reload(null,false);
                        }
                    });
                }
@@ -291,37 +298,81 @@
                type: 'post',
                url: "{{URL::to('admin/approve_product')}}",
                data: "_token=" + token + "&id=" + id,
-               beforeSend: function() {
-                   $("." + id).css("background-color", "#fb6c6c");
-               },
-               success: function(data1) {
+               success: function(data) {
                    parent.slideUp(300, function() {
-                       if (data1 == 0) {
+                       if (data.status === true) {
                            swal('Approved!', 'Product Approved', 'success');
-                           $("#customers2").load(window.location + " #customers2");
+                           $('#datatable').DataTable().ajax.reload(null,false);
                        } else {
-                           $("#customers2").load(window.location + " #customers2");
+                        toastr.success('Some think is went  to  wrong');
                        }
                    });
                }
            });
        });
    });
-//    //EDIt PRODUCT
-//    $(document).on('click', '.edit_product', function(e) {
-//        e.preventDefault();
-//        var id = $(this).data('id');
-//        var token = "{{ Session::token() }}";
-//        var parent = $(this).parent();
-//         $.ajax({
-//             type: 'post',
-//             url: "{{URL::to('admin/get_product_by_id')}}",
-//             data: "_token=" + token + "&id=" + id,
-//             success: function(data1) {
-
-//             }
-//        });
-//    });
+   //EDIt PRODUCT
+   $(document).on('click', '.edit_product', function(e) {
+       e.preventDefault();
+       var id = $(this).attr('id');
+       var token = "{{ Session::token() }}";
+       var parent = $(this).parent();
+        $.ajax({
+            type: 'post',
+            url: "{{URL::to('admin/edit_product')}}",
+            data: "_token=" + token + "&id=" + id,
+            dataType:"json",
+            success: function(data) {
+                $('#product_edit_form').trigger("reset");
+                $("#hidden_id").val(data.data.id);
+                $("#cid").val(data.data.cid);
+                $("#product_name").val(data.data.product_name);
+                $("#discount_price").val(data.data.discount_price);
+                $("#quantity").val(data.data.quantity);
+                $("#sku").val(data.data.sku);
+                $("#branch_id").val(data.data.branch_id);
+                $("#comments").val(data.data.comments);
+                $("#status").val(data.data.approved_status);
+                $("#product_edit").modal('show');
+            }
+       });
+   });
+      //Update Product 
+      $(document).on('submit', '#insert_product', function(e) {
+       e.preventDefault();
+        $.ajax({
+            type: 'post',
+            url: "{{URL::to('admin/insert_product')}}",
+            data: $('#insert_product').serialize(),
+            dataType:"json",
+            success: function(data) {
+                if(data.status===true)
+                {
+                    $("#exampleModalLabel").modal('hide');
+                    $('#insert_product').trigger("reset");
+                    $('#datatable').DataTable().ajax.reload(null,false);
+                    toastr.success('Product Added Successfully');
+                }
+                else
+                    toastr.error('Sku Already Exsists');
+            }
+       });
+   });
+   //Update Product 
+   $(document).on('submit', '#product_edit_form', function(e) {
+       e.preventDefault();
+        $.ajax({
+            type: 'post',
+            url: "{{URL::to('admin/update_product')}}",
+            data: $('#product_edit_form').serialize(),
+            dataType:"json",
+            success: function(data) {
+                $("#product_edit").modal('hide');
+                $('#datatable').DataTable().ajax.reload(null,false);
+                toastr.success('Product Update Successfully');
+            }
+       });
+   });
    $('.check_all').click(function() {
        if ($(this).is(':checked', true)) {
            $(".checkbox").prop('checked', true);

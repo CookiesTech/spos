@@ -38,9 +38,9 @@ Route::get('/category', 'HomeController@category');
 Route::post('/insert_category','HomeController@insert_category');
 Route::delete('/delete_category','HomeController@delete_category');
 
-Route::get('/products', 'HomeController@products');
-Route::get('/low_stock', 'HomeController@low_stock');
+Route::get('/products/{product_type}', 'HomeController@products');
 Route::post('/insert_product','HomeController@insert_product');
+Route::post('/edit_product','HomeController@edit_product');
 Route::post('/update_product','HomeController@update_product');
 Route::delete('/delete_product','HomeController@delete_product');
 Route::post('approve_product','HomeController@approve_product');

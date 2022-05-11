@@ -72,15 +72,15 @@
 
                 </li>
 
-                 <li class="<?php if($da=="products"){ echo  "active"; } ?>">
+                 <li class="<?php if($da=="all_products"){ echo  "active"; } ?>">
 
-                    <a href="{{ url('admin/products') }}"><span class="fa fa-files-o"></span>Products</a>                       
+                    <a href="{{ url('admin/products/all_products') }}"><span class="fa fa-files-o"></span>Products</a>                       
 
                 </li>
 
-                <li class="<?php if($da=="low_stock"){ echo  "active"; } ?>">
+                <li class="<?php if($da=="low_stocks"){ echo  "active"; } ?>">
 
-                    <a href="{{ url('admin/low_stock') }}"><span class="fa fa-files-o"></span>Low Products</a>                       
+                    <a href="{{ url('admin/products/low_stocks') }}"><span class="fa fa-files-o"></span>Low Products</a>                       
 
                 </li>
 

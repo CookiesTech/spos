@@ -231,14 +231,17 @@ class HomeController extends Controller {
         $data1 = Category::count();
         return Response::json($data1, 200);
     }
-    public function products(Request $request) {
-        if($request->ajax()){      
+    public function products(Request $request,$type) {
+        if($request->ajax()){ 
+
             $products = Products::select(array(
                 'product_name', 'quantity', 'discount_price', 'sku', 'cid','branch_id','stock_status','approved_status','comments','id',
             ))->where('status', 1);
+            if($type!='all_products')
+                $products->where('quantity','<=',5);
             return Datatables::of($products)
             ->addColumn('action', function($data){
-                $btn = '<button class="btn btn-primary" data-target="#edit'. $data->id.'" data-toggle="modal" type="button"><i class="os-icon os-icon-ui-49">Edit</i></button> 
+                $btn = '<button class="btn btn-primary edit_product" id="'. $data->id.'"  type="button"><i class="os-icon os-icon-ui-49">Edit</i></button> 
                 <button class="btn btn-primary delete" type="button" data-id="'. $data->id.'"><i class="os-icon os-icon-ui-15">Delete</i></button>';  
                 return $btn;
             })
@@ -264,16 +267,14 @@ class HomeController extends Controller {
             ->rawColumns(['action','stock_status','approved_status','checkbox','branch_id'])
             ->make(true);
         }
-        $datas = Products::where('status', 1)->orderBy('id', 'desc')->get();
         $category = Category::where('status', 1)->get();
         $branches = Branches::all();
-        return view('products', ['datas' => $datas, 'categories' => $category, 'branches' => $branches]);
+        return view('products', ['datas' => $datas, 'categories' => $category, 'branches' => $branches,'type'=>$type]);
     }
-    public function low_stock() {
-        $datas = Products::where('status', 1)->where('quantity','<=',5)->orderBy('id', 'desc')->get();
-        $category = Category::where('status', 1)->get();
-        $branches = Branches::all();
-        return view('low_stock', ['datas' => $datas, 'categories' => $category, 'branches' => $branches]);
+    public function edit_product(Request $request)
+    {
+        $product=Products::where('id',$request->post('id'))->first();
+        echo json_encode(array("data"=>$product));exit;
     }
     public function insert_product(Request $request) {
        $sku=mt_rand(100000, 999999);
@@ -309,18 +310,17 @@ class HomeController extends Controller {
 		$data->approved_status=$request->post('status');
         $data->save();
        
-        Session::flash('success', 'New Product Added Successfully');
+        return Response::json(array('status'=>true), 200);
         }else
         {
-             Session::flash('error', 'Sku Already Exists.');
+            return Response::json(array('status'=>false), 200);
         }
         return redirect('admin/products');
     }
     public function update_product(Request $request) {
         $data = Products::where('id', Input::get('id'))->update(['cid' => Input::get('cid'), 'branch_id' => Input::get('branch_id'), 'product_name' => Input::get('product_name'), 'discount_price' => Input::get('discount_price'),
         'quantity' => Input::get('quantity'),'igst'=>Input::get('igst'),'cgst'=>Input::get('cgst'),'sgst'=>Input::get('sgst'),'approved_status'=>$request->post('status')]);
-        Session::flash('success', 'Product Updated Successfully');
-        return redirect('admin/products');
+        return Response::json(array('status'=>true), 200);
     }
     public function delete_product() {
         $data = Products::where('id', Input::get('id'))->delete();
@@ -329,7 +329,7 @@ class HomeController extends Controller {
     }
      public function approve_product(Request $request){
          DB::table('products')->where('id',$request->post('id'))->update(['approved_status'=>2]);
-         return Redirect::back();
+         return Response::json(array('status'=>true), 200);
      }
     public function get_products() {
         $id = Input::get('id');

@@ -64,15 +64,36 @@ class StaffController extends Controller
         }
         return view('staff/sales');
     }
-    public function products(){
-        $branch_id=Auth::user()->branch_id;
-        $datas = Products::where('status', 1)->where('branch_id',$branch_id)->orderBy('id', 'desc')->get();
-        return view('staff/products', ['datas' => $datas]);
+    public function products(Request $request){
+        if($request->ajax()){ 
+            $branch_id=Auth::user()->branch_id;
+            $products = Products::select(array(
+                'product_name', 'quantity', 'discount_price', 'sku', 'cid','branch_id','stock_status','approved_status','comments','id',
+            ))->where('status', 1)->where('branch_id',$branch_id);
+            return Datatables::of($products)
+            ->addColumn('action', function($data){
+                if($data->approved_status!=2)
+                    $btn='<button class="btn btn-primary approve_product" data-id="'.$data->id.'" type="button"><i class="os-icon os-icon-ui-49">Edit</i></button>';
+                else
+                    $btn='<span class="label label-success">Status Approved</span>';
+                return $btn;
+            })
+            ->addColumn('checkbox', function($data){
+                $btn = '<input type="checkbox" class="checkbox" value="'.$data->id.'" name="id[]">';  
+                return $btn;
+            })
+            ->editColumn('stock_status', function($data){
+                $btn = ($data->quantity< 2) ?'<span class="label label-danger">'.$data->stock_status.'</span>' : '<span class="label label-success">'.$data->stock_status.'</span>';  
+                return $btn;
+            })
+            ->rawColumns(['action','stock_status'])
+            ->make(true);
+        }
+        return view('staff/products');
     }
     public function update_product_status(Request $request){
         DB::table('products')->where('id',$request->post('id'))->update(['approved_status'=>$request->post('status'),'comments'=>$request->post('comments')]);
-        Session::flash('success', 'Status Updated Successfully');
-        return Redirect::back();
+        return Response::json(array('status'=>true), 200);
     }
     public static function get_attendence_info($emp_id){        
          $data=DB::table('attendance')->where('emp_id',$emp_id)->select('clock_out_date','clock_in_date')->orderBy('id','desc')->first();
