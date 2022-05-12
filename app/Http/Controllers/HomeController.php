@@ -269,7 +269,7 @@ class HomeController extends Controller {
         }
         $category = Category::where('status', 1)->get();
         $branches = Branches::all();
-        return view('products', ['datas' => $datas, 'categories' => $category, 'branches' => $branches,'type'=>$type]);
+        return view('products', ['categories' => $category, 'branches' => $branches,'type'=>$type]);
     }
     public function edit_product(Request $request)
     {
