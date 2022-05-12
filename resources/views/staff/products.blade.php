@@ -45,6 +45,7 @@
                         <table id="datatable" class="table table-border">
                             <thead>
                                 <tr>
+                                    <th>S.NO </th>  
                                     <th> Product Name </th>
                                     <th> Quantity </th>
                                     <th> Selling Price </th>
@@ -129,6 +130,7 @@
             "type": "GET"
         },
         "columns": [
+            { data: 'id', name: 'id' },
             { data: 'product_name', name: 'product_name' },
             { data: 'quantity', name: 'quantity' },
             { data: 'discount_price', name: 'discount_price' },

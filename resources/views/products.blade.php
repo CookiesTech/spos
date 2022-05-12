@@ -47,6 +47,7 @@
                         <table id="datatable" class="table table-border">
                             <thead>
                                 <tr>
+                                    <th>S.NO</th>
                                     <th>Select</th>
                                     <th> Product Name </th>
                                     <th> Quantity </th>
@@ -233,6 +234,7 @@
             "type": "GET"
         },
         "columns": [
+            { data: 'id', name: 'id'},
             { data: 'checkbox', name: 'checkbox',orderable: false},
             { data: 'product_name', name: 'product_name' },
             { data: 'quantity', name: 'quantity' },
