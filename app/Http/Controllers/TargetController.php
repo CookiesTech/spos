@@ -10,11 +10,8 @@ use Illuminate\Support\Facades\Redirect;
 use Session;
 use Auth;
 use DB;
-use File;
-use Barryvdh\DomPDF\Facade as PDF;
 use App\User;
 use  App\Target;
-use Carbon\Carbon;
 use DateTime;
 use Yajra\DataTables\DataTables;
 class TargetController extends Controller {
@@ -27,13 +24,14 @@ class TargetController extends Controller {
     {
         $data['employees']=DB::table('employees')->where('status','Active')->get();
         if($request->ajax()){  
+            $start = new DateTime("first day of last month");
+            $end =date('Y-m-t');
             $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
-            ->join("employee_day_sale as d",function($join){
-                $join->on("d.invoice_date","=","t.date")
-                     ->on("d.emp_id","=","t.emp_id");
-            })
-            ->whereMonth('d.invoice_date', date('m'))->get();
-
+            ->leftJoin('employee_day_sale as d', function($join) {
+                $join->on('t.emp_id', '=', 'd.emp_id') 
+                 ->on('t.date', '=', 'd.invoice_date');
+              })
+            ->whereBetween('t.date', [$start, $end])->get();
             return Datatables::of($target_data)
             ->addColumn('total_target', function($row){
                 return $row->target_amt+$row->carry_forward_amt;
@@ -75,7 +73,7 @@ class TargetController extends Controller {
             }
             else
             {
-                $carry_forward_amt=$get_last_target_data->target_amt;
+                $carry_forward_amt=$get_last_target_data->target_amt+$get_last_target_data->carry_forward_amt;
             }
                 
         }

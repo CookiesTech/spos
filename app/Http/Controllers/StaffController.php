@@ -21,6 +21,7 @@ use App\Purchase;
 use App\User;
 use PDF;
 use Carbon\Carbon;
+use DateTime;
 use Yajra\DataTables\DataTables;
 
 class StaffController extends Controller
@@ -281,10 +282,12 @@ class StaffController extends Controller
     public function sales_target(Request $request)
     {
         if($request->ajax()){  
+            $start = new DateTime("first day of last month");
+            $end =date('Y-m-t');
             $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
             ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
             ->where('t.emp_id', Auth::user()->emp_id)
-            ->whereMonth('t.date', date('m'))->groupBy('t.date','t.emp_id')->get();
+            ->whereBetween('t.date', [$start, $end])->groupBy('t.date','t.emp_id')->get();
             return Datatables::of($target_data)
             ->addColumn('total_target', function($row){
                 return $row->target_amt+$row->carry_forward_amt;
