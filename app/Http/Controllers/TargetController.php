@@ -56,6 +56,11 @@ class TargetController extends Controller {
         $last_carry_forward_amt=0;
         //  check_already_set_target_this_user based on emp_id & Date
         $check =Target::where('emp_id',Input::get('emp_id'))->where('date',Input::get('date'))->count();
+        if(date('Y-m-d') != Input::get('date'))
+        {
+            echo json_encode(array('status'=>false,'message'=>'Target Setup Only Current Date.'));
+            exit;
+        }
         if($check>0)
         {
             echo json_encode(array('status'=>false,'message'=>'Already Target Set to This Employee.'));
