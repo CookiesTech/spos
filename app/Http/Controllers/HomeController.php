@@ -585,12 +585,13 @@ class HomeController extends Controller {
         $to_date = Input::get('to_date');
         $array=$this->category_array();
         $final_data=array();
-        if(Input::get('branch')!='all') {
+        if(Input::get('branch_id')!='all') {
             $branches_wise=Branches::all()->where('branch_id',Input::get('branch_id'));
          }
          else
+         {
             $branches_wise=Branches::all();
-         
+         }
         foreach($branches_wise as $branch)
         {              
             $array['Branch Name']=$branch->name;
@@ -635,10 +636,7 @@ class HomeController extends Controller {
            $query = $query->whereDate('s.created_at',Carbon::today());
          
         }
-        
         $data= $query->groupBy('branch_id')->get();
-        
-       //echo "<pre>";print_r($data);exit;
         if($data)
         {
             foreach($data as $d)
@@ -654,7 +652,6 @@ class HomeController extends Controller {
         {
             $final_data=array();
         }
-         //echo "<pre>";print_r($final_data);exit;
 	    return view('branch_status',['data'=>$final_data]);
 	}
     public function target_report()
