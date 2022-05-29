@@ -60,7 +60,11 @@ class StaffController extends Controller
                 $formatedDate = date('d-m-Y H:i:s', strtotime($data->created_at)); 
                 return $formatedDate; 
             })
-            ->rawColumns(['action'])
+            ->editColumn('branch_id', function($data){
+                $branch = $this->get_branch_name($data->branch_id);
+                return $branch->name.'('.$data->branch_id.')';
+            })
+            ->rawColumns(['action','branch_id'])
             ->make(true);
         }
         return view('staff/sales');
@@ -306,6 +310,52 @@ class StaffController extends Controller
         }
         return view('staff/sales_target');
     }
-
+    public function request(Request $request) {
+        $data['branch_employees']=User::where('branch_id',Auth::user()->branch_id)->where('status',1)->select('emp_id','name')->get(); 
+        if($request->ajax()){ 
+            $branch_id=Auth::user()->branch_id;
+            $emp_request = DB::table('emp_request')->select(array('emp_id', 'request', 'created_at','branch_id','status','id'))->where('branch_id',$branch_id);
+            return Datatables::of($emp_request)
+            ->addColumn('action', function($data){
+                $btn='<button class="btn btn-primary view_request" data-emp_id="'.$data->emp_id.'"   data-request="'.$data->request.'" type="button"><i class="os-icon os-icon-ui-49">View</i></button>';
+                return $btn;
+            })
+            ->editColumn('status', function($data){
+                $btn = ($data->status =="Pending") ?'<span class="label label-danger">'.$data->status.'</span>' : '<span class="label label-success">'.$data->status.'</span>';  
+                return $btn;
+            })
+            ->editColumn('created_at', function($data){
+                $formatedDate = date('d-m-Y H:i:s', strtotime($data->created_at)); 
+                return $formatedDate; 
+            })
+            ->editColumn('request', function($data){
+                $request =$out = strlen($data->request) > 50 ? substr($data->request,0,50)."..." : $data->request; 
+                return $request; 
+            })
+            ->editColumn('branch_id', function($data){
+                $branch = $this->get_branch_name($data->branch_id);
+                return $branch->name.'('.$data->branch_id.')';
+            })
+            ->editColumn('emp_id', function($data){
+                $emp_name = $this->get_emp_name($data->emp_id);
+                return $emp_name->fname.'('.$data->emp_id.')';
+            })
+            ->rawColumns(['action','status','created_at','branch_id'])
+            ->make(true);
+        }
+        return view('staff/request',$data);
+    }
+    public function add_request(Request $request){
+        DB::table('emp_request')->insert(['branch_id'=>Auth::user()->branch_id,'emp_id'=>$request->post('emp_id'),'request'=>$request->post('request')]);
+        return Response::json(array('status'=>true), 200);
+    }
+    public static function get_branch_name($branch_id) {
+        $data = Branches::where('branch_id', $branch_id)->first();
+        return $data;
+    }
+    public static function get_emp_name($emp_id) {
+        $data = Employees::where('emp_id', $emp_id)->first();
+        return $data;
+    }
 }
 

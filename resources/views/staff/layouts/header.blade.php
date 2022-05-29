@@ -41,6 +41,9 @@
                 <li class="<?php if($da=="sales_target"){ echo  "active"; } ?>">
                     <a href="{{ url('staff/sales_target') }}"><span class="fa fa-files-o"></span>Sales Target</a>                       
                 </li>
+                <li class="<?php if($da=="request"){ echo  "active"; } ?>">
+                    <a href="{{ url('staff/request') }}"><span class="fa fa-files-o"></span>Request</a>                       
+                </li>
             </ul>
             <!-- END X-NAVIGATION -->
         </div>

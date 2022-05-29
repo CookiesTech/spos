@@ -64,14 +64,15 @@ Route::post('print_barcodes','HomeController@print_barcodes');
 Route::get('/target','TargetController@target');
 Route::post('/add_target','TargetController@add_target');
 Route::post('/update_target','TargetController@update_target');
-
-
 //Report Setion
 Route::get('/reports','HomeController@reports');
 Route::post('/sales_reports','HomeController@sales_reports');
 Route::post('/employee_sales_report','HomeController@employee_sales_report');
 Route::post('/category_report','HomeController@category_report');
 Route::post('/target_report','HomeController@target_report');
+//Request
+Route::get('request','HomeController@request');
+Route::post('update_request','HomeController@update_request');
 });
 
 // Staff Part
@@ -94,6 +95,8 @@ Route::group(['prefix' => 'staff'], function () {
 	Route::post('/product_exchange','StaffController@product_exchange');
 	Route::get('staff_sales','StaffController@staff_sales');
     Route::get('sales_target','StaffController@sales_target');
+    Route::get('request','StaffController@request');
+    Route::post('add_request','StaffController@add_request');
     
 });
 //Manager Part

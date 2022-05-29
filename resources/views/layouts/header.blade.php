@@ -41,84 +41,48 @@
 		               $da=last(request()->segments());
 
 		         ?>
-
                 <li class="<?php if($da=="home"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/home') }}"><span class="fa fa-desktop"></span> <span class="xn-text">Dashboard</span></a>                        
-
                 </li>
-
                 <li class="<?php if($da=="branches"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/branches') }}"><span class="fa fa-files-o"></span>Branches</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="employees"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/employees') }}"><span class="fa fa-files-o"></span>Employees</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="attendance"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/attendance') }}"><span class="fa fa-files-o"></span>Attendance</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="category"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/category') }}"><span class="fa fa-files-o"></span>Category</a>                       
-
                 </li>
-
                  <li class="<?php if($da=="all_products"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/products/all_products') }}"><span class="fa fa-files-o"></span>Products</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="low_stocks"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/products/low_stocks') }}"><span class="fa fa-files-o"></span>Low Products</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="sales"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/sales') }}"><span class="fa fa-files-o"></span>Sales</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="hide_sales"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/hide_sales') }}"><span class="fa fa-files-o"></span>Hide Sales</a>                       
-
                 </li>
-
                  <li class="<?php if($da=="branch_bill_status"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/branch_bill_status') }}"><span class="fa fa-files-o"></span>Branch Report</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="time_cards"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/time_cards') }}"><span class="fa fa-files-o"></span>Time Cards</a>                       
-
                 </li>
-
                 <li class="<?php if($da=="reports"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/reports') }}"><span class="fa fa-files-o"></span>Reports</a>                       
-
                 </li>
                  <li class="<?php if($da=="target"){ echo  "active"; } ?>">
-
                     <a href="{{ url('admin/target') }}"><span class="fa fa-files-o"></span>Target Sheet</a>                       
-
                 </li>
-
+                <li class="<?php if($da=="request"){ echo  "active"; } ?>">
+                    <a href="{{ url('admin/request') }}"><span class="fa fa-files-o"></span>Branch Request</a>                       
+                </li>
             </ul>
 
             <!-- END X-NAVIGATION -->

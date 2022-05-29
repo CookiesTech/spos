@@ -1,4 +1,4 @@
-@include('layouts.links')
+@include('staff/layouts.links')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css">
 <style>
     .form-control {
@@ -26,7 +26,8 @@
   margin-left: -105px;
 }
 </style>
-@include('layouts.header')<ul class="breadcrumb">
+@include('staff/layouts.header')
+<ul class="breadcrumb">
     <li><a href="/home">Home</a></li>
     <li><a href="/products">products</a></li>
 </ul><!-- END BREADCRUMB -->
@@ -117,7 +118,7 @@
         </div>
     </div>
 </div>
-  @include('layouts.footer')
+@include('staff/layouts.footer')
 <!-- ADD  -->
 <script src="https://cdn.datatables.net/1.10.11/js/jquery.dataTables.min.js"></script>
 <script>

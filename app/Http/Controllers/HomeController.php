@@ -96,8 +96,8 @@ class HomeController extends Controller {
         {
 			$max_id = DB::table('employees')->count();
 			$emp_id="SJ-".str_pad($max_id+1, 4, '0', STR_PAD_LEFT);
-        $file = Input::file('image');
-         if ($file != NULL) {
+           $file = Input::file('image');
+           if ($file != NULL) {
             $url=url('/').'/public/uploads/employees/';
             $destinationPath = public_path() . '/uploads/employee/'; // upload path
             $fileName = Input::file('image')->getClientOriginalName();
@@ -203,17 +203,16 @@ class HomeController extends Controller {
     public function staff_clockout(Request $request){
         $emp_id=$request->post('emp_id'); 
         $data=DB::table('attendance')->where('emp_id',$emp_id)->where('clock_out_date','=',NULL)->select('clock_out_date','clock_in_date','id')->orderBy('id','desc')->first();
-        
         $last_id=$data->id;        
         $clout_date=date('Y-m-d h:i:s');
         $data=DB::table('attendance')->where('id',$last_id)->first();
         $time = new Carbon($data->clock_in_date);
         $shift_end_time =new Carbon($clout_date);        
-       $minutes= $time->diffInMinutes($shift_end_time);
-       $hours = floor($minutes / 60).':'.($minutes -   floor($minutes / 60) * 60);
-       $total_time=$hours;
+        $minutes= $time->diffInMinutes($shift_end_time);
+        $hours = floor($minutes / 60).':'.($minutes -   floor($minutes / 60) * 60);
+        $total_time=$hours;
         DB::table('attendance')->where('id',$last_id)->update(['clock_out_date'=>$clout_date,'total_time'=>$total_time,'date'=>date('Y-m-d')]);
-         return 1;
+        return 1;
     }
     public function category() {
         $data = Category::where('status', 1)->get();
@@ -221,7 +220,6 @@ class HomeController extends Controller {
     }
 
     public function insert_category(Request $request) {
-        //print_r(Input::get('name'));exit;
         $data = new Category();
         $data->name = Input::get('name');
         $data->save();
@@ -377,6 +375,10 @@ class HomeController extends Controller {
     }
     public static function get_branch_name($branch_id) {
         $data = Branches::where('branch_id', $branch_id)->first();
+        return $data;
+    }
+    public static function get_emp_name($emp_id) {
+        $data = Employees::where('emp_id', $emp_id)->first();
         return $data;
     }
     public function invoice($invoice_id) {
@@ -585,13 +587,12 @@ class HomeController extends Controller {
         $to_date = Input::get('to_date');
         $array=$this->category_array();
         $final_data=array();
-        if(Input::get('branch_id')!='all') {
+        if(Input::get('branch')!='all') {
             $branches_wise=Branches::all()->where('branch_id',Input::get('branch_id'));
          }
          else
-         {
             $branches_wise=Branches::all();
-         }
+         
         foreach($branches_wise as $branch)
         {              
             $array['Branch Name']=$branch->name;
@@ -636,7 +637,10 @@ class HomeController extends Controller {
            $query = $query->whereDate('s.created_at',Carbon::today());
          
         }
+        
         $data= $query->groupBy('branch_id')->get();
+        
+       //echo "<pre>";print_r($data);exit;
         if($data)
         {
             foreach($data as $d)
@@ -656,7 +660,6 @@ class HomeController extends Controller {
 	}
     public function target_report()
     {
-       
         $final_data=array();
         $fm_date =Input::get('from_date');
         $to_date = Input::get('to_date');
@@ -701,5 +704,43 @@ class HomeController extends Controller {
         {
             return redirect('admin/reports')->with('error','No Data Found');
         }
+    }
+    public function request(Request $request) {
+        $data['branch_employees']=User::where('branch_id',Auth::user()->branch_id)->where('status',1)->select('emp_id','name')->get(); 
+        if($request->ajax()){ 
+            $emp_request = DB::table('emp_request')->select(array('emp_id','request','created_at','branch_id','status','id'));
+            return Datatables::of($emp_request)
+            ->addColumn('action', function($data){
+                $btn='<button class="btn btn-primary view_request" data-emp_id="'.$data->emp_id.'"   data-request="'.$data->request.'" type="button"><i class="os-icon os-icon-ui-49">View</i></button>';
+                return $btn;
+            })
+            ->editColumn('status', function($data){
+                $btn = ($data->status =="Pending") ?'<a href="#" class="label label-danger approve_request" data-id="'.$data->id.'">'.$data->status.'</a>' : '<span class="label label-success">'.$data->status.'</span>';  
+                return $btn;
+            })
+            ->editColumn('created_at', function($data){
+                $formatedDate = date('d-m-Y H:i:s', strtotime($data->created_at)); 
+                return $formatedDate; 
+            })
+            ->editColumn('request', function($data){
+                $request = strlen($data->request) > 50 ? substr($data->request,0,50)."..." : $data->request; 
+                return $request; 
+            })
+            ->editColumn('branch_id', function($data){
+                $branch = $this->get_branch_name($data->branch_id);
+                return $branch->name.'('.$data->branch_id.')';
+            })
+            ->editColumn('emp_id', function($data){
+                $emp_name = $this->get_emp_name($data->emp_id);
+                return $emp_name->fname.'('.$data->emp_id.')';
+            })
+            ->rawColumns(['action','status'])
+            ->make(true);
+        }
+        return view('request',$data);
+    }
+    public function update_request(Request $request) {
+        $data = DB::table('emp_request')->where('id', Input::get('id'))->update(['status' => "Closed"]);
+        return Response::json(array('status'=>true), 200);
     }
 }
