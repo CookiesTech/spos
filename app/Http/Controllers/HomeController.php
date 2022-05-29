@@ -706,7 +706,7 @@ class HomeController extends Controller {
         }
     }
     public function request(Request $request) {
-        $data['branch_employees']=User::where('branch_id',Auth::user()->branch_id)->where('status',1)->select('emp_id','name')->get(); 
+        $data['branch_employees']=User::where('status',1)->select('emp_id','name')->get(); 
         if($request->ajax()){ 
             $emp_request = DB::table('emp_request')->select(array('emp_id','request','created_at','branch_id','status','id'));
             return Datatables::of($emp_request)

@@ -82,7 +82,7 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="form-group"> <label for=""> Request By :</label> 
-                            <select class="form-control" name="emp_id" required>
+                            <select class="form-control" name="emp_id" required >
                                     <option value="">[..Request By..]</option> 
                                     @foreach($branch_employees as $emp)
                                         <option value="{{ $emp->emp_id }}" empname="{{ $emp->name }}" class="payment_mode">{{ $emp->name }}-{{ $emp->emp_id }}<br>
