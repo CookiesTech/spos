@@ -457,7 +457,7 @@ class HomeController extends Controller {
     }
     //Report
     public function reports() {
-        $data['datas'] =User::where('role','staff')->select('emp_id','name')->get();
+        $data['datas'] =Employees::where('role','staff')->select('emp_id','fname as name')->get();
         $data['branches']=Branches::all();
         return view('reports',$data);
     }

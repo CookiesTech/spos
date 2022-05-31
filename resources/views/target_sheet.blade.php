@@ -11,6 +11,48 @@
 </div>
 <!-- END PAGE TITLE -->                
 <!-- PAGE CONTENT WRAPPER -->
+<div class="col-md-12">
+            <div class="panel panel-default">
+           <div class = "panel-heading">
+                Employee Target Report
+           </div>  
+               <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label for=""> Select Date Range:</label>
+                               <div class="input-group input-large"  data-date-format="yyyy-mm-dd" >
+                                <input type="date" class="form-control" name="from_date"  id="s_from_date" required>
+                                <span class="input-group-addon">
+                                    to </span>
+                                <input type="date" class="form-control" name="to_date" id="s_to_date"  required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <div class="form-group">               
+                        <label for="">Staff:</label>
+                        <select name="emp_id"  class="form-control"  id="s_emp_id" >
+                            <option value="all">All</option>
+                            @foreach($employees as $data)
+                            <option value="{{$data->emp_id}}">{{$data->name}} ({{$data->emp_id}})</option>
+                            @endforeach
+                        </select>         
+                        </div>
+                   </div>
+                    <div class="col-sm-3">
+                            <div class="form-group">               
+                            <label for="">Branch:</label>
+                            <select name="branch_id"  class="form-control"  id="s_branch_id">
+                                <option value="all">All</option>
+                                @foreach($branches as $branch)
+                                <option value="{{$branch->branch_id}}">{{$branch->name}} ({{$branch->branch_id}})</option>
+                                @endforeach
+                            </select>         
+                     </div>
+                  <button class="btn btn-primary search_filter" type="button" style='margin-top: 10px;float: right;margin-right: 10px;'>Submit</button>    
+               </div>
+            </div>
+            </div>
 <div class="page-content-wrap">
     <div class="row">
         <div class="col-md-12">
@@ -28,9 +70,7 @@
                                 <th>Branch</th>
                                 <th>Saled Count</th>
                                 <th>Target Amount</th>
-                                <th>Carry Forward</th>
                                 <th>Saled Amount</th>
-                                <th>Total Target</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -100,18 +140,28 @@
         "processing": true,
         "serverSide": true,
         "order": [[ 0, "desc" ]],
-        "ajax": '{{url("admin/target")}}',
+         ajax: {
+            url: "{{url('admin/target')}}",
+            data: function(d){
+                d.from_date = $('#s_from_date').val(),
+                d.to_date = $('#s_to_date').val(),
+                d.emp_id = $('#s_emp_id').val(),
+                d.branch_id = $('#s_branch_id').val();
+            }
+        },
         "columns": [
             { data: 'date', name: 'date' },
             { data: 'emp_id', name: 'emp_id' },
             { data: 'branch_id', name: 'branch_id' },
             { data: 'day_sales_count', name: 'day_sales_count' },
             { data: 'target_amt', name: 'target_amt' },
-            { data: 'carry_forward_amt', name: 'carry_forward_amt' },
             { data: 'day_sales_value', name: 'day_sales_value' },
-            { data: 'total_target', name: 'total_target' },
-            { data: 'blance_target_amt', name: 'blance_target_amt' }
+            { data: 'blance', name: 'blance' }
         ]
+    });
+    $(document).on('click', '.search_filter', function (e) {
+        e.preventDefault();
+        $('#datatable').DataTable().draw();
     });
     $(document).on('click', '.add_target', function (e) {
         e.preventDefault();

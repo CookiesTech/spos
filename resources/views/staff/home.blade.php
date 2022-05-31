@@ -166,12 +166,10 @@ setlocale(LC_MONETARY, 'en_IN');
         <div class="box-footer no-padding">
           <ul class="nav nav-stacked">
             <li><a href="#">Target Amount  <span class="pull-right badge bg-defult">{{$today_target_data->target_amt}}</span></a></li>
-            <li><a href="#">Carry Forward <span class="pull-right badge bg-defult">{{$today_target_data->carry_forward_amt}}</span></a></li>
             <li><a href="#">Today Sales<span class="pull-right badge bg-defult">{{$today_target_data->day_sales_value}}</span></a></li>
-            <li><a href="#">Total Target <span class="pull-right badge bg-defult">{{$today_target_data->target_amt+$today_target_data->carry_forward_amt}}</span></a></li>
             <?php
                 $balance=0;
-                $total_target=$today_target_data->target_amt+$today_target_data->carry_forward_amt;
+                $total_target=$today_target_data->target_amt;
                 if($total_target > $today_target_data->day_sales_value)
                     $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($total_target-$today_target_data->day_sales_value).'</span></a></li>';
                 else

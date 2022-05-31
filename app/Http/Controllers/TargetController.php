@@ -11,6 +11,8 @@ use Session;
 use Auth;
 use DB;
 use App\User;
+use App\Branches;
+use App\Employees;
 use  App\Target;
 use DateTime;
 use Yajra\DataTables\DataTables;
@@ -22,30 +24,50 @@ class TargetController extends Controller {
     }
     public function target(Request $request)
     {
-        $data['employees']=DB::table('employees')->where('status','Active')->get();
-        if($request->ajax()){  
-            $start = new DateTime("first day of last month");
-            $end =date('Y-m-t');
+        $data['employees'] =Employees::where('role','staff')->where('status','Active')->select('emp_id','fname as name')->get();
+        $data['branches']=Branches::all();
+        if($request->ajax()){ 
             $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
             ->leftJoin('employee_day_sale as d', function($join) {
                 $join->on('t.emp_id', '=', 'd.emp_id') 
                  ->on('t.date', '=', 'd.invoice_date');
-              })
-            ->whereBetween('t.date', [$start, $end])->get();
+              });
+            //Filter
+            if(empty(Input::get('from_date')) && empty(Input::get('to_date')))
+            {
+                $start = new DateTime("first day of last month");
+                $end =date('Y-m-t');
+            }
+            else
+            {
+                $start = Input::get('from_date');
+                $end =Input::get('to_date');
+            }
+            if(Input::get('branch_id')!='all')
+                $target_data = $target_data->where('d.branch_id',Input::get('branch_id'));
+            if(Input::get('emp_id')!='all')
+                $target_data = $target_data->where('t.emp_id',Input::get('emp_id'));
+
+            $target_data =  $target_data->whereBetween('t.date', [$start, $end])->get();
             return Datatables::of($target_data)
-            ->addColumn('total_target', function($row){
-                return $row->target_amt+$row->carry_forward_amt;
-            })
-            ->addColumn('blance_target_amt', function($row){
+            ->addColumn('blance', function($row){
                 $balance=0;
-                $total_target=$row->target_amt+$row->carry_forward_amt;
+                $total_target=$row->target_amt;
                 if($row->day_sales_value > $total_target)
                     $btn='<span class="label label-success">'.($row->day_sales_value-$total_target).'</span>';
                 else
                     $btn='<span class="label label-danger">'.($total_target-$row->day_sales_value).'</span>';
                 return $btn;
             })
-            ->rawColumns(['blance_target_amt','total_target'])
+            ->editColumn('branch_id', function($data){
+                $branch = $this->get_branch_name($data->branch_id);
+                return $branch->name.'('.$data->branch_id.')';
+            })
+            ->editColumn('emp_id', function($data){
+                $emp_name = $this->get_emp_name($data->emp_id);
+                return $emp_name->fname.'('.$data->emp_id.')';
+            })
+            ->rawColumns(['blance'])
             ->make(true);
         }
         return view('target_sheet',$data);
@@ -56,11 +78,6 @@ class TargetController extends Controller {
         $last_carry_forward_amt=0;
         //  check_already_set_target_this_user based on emp_id & Date
         $check =Target::where('emp_id',Input::get('emp_id'))->where('date',Input::get('date'))->count();
-        if(date('Y-m-d') != Input::get('date'))
-        {
-            echo json_encode(array('status'=>false,'message'=>'Target Setup Only Current Date.'));
-            exit;
-        }
         if($check>0)
         {
             echo json_encode(array('status'=>false,'message'=>'Already Target Set to This Employee.'));
@@ -91,6 +108,14 @@ class TargetController extends Controller {
             echo json_encode(array('status'=>true));
         else
             echo json_encode(array('status'=>false));
+    }
+    public static function get_branch_name($branch_id) {
+        $data = Branches::where('branch_id', $branch_id)->first();
+        return $data;
+    }
+    public static function get_emp_name($emp_id) {
+        $data = Employees::where('emp_id', $emp_id)->first();
+        return $data;
     }
     public function update_target(Request $request)
     {

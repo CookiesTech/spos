@@ -153,12 +153,10 @@
         <div class="box-footer no-padding">
           <ul class="nav nav-stacked">
             <li><a href="#">Target Amount  <span class="pull-right badge bg-defult">{{$data->target_amt}}</span></a></li>
-            <li><a href="#">Carry Forward <span class="pull-right badge bg-defult">{{$data->carry_forward_amt}}</span></a></li>
             <li><a href="#">Today Sales<span class="pull-right badge bg-defult">{{$data->day_sales_value}}</span></a></li>
-            <li><a href="#">Total Target <span class="pull-right badge bg-defult">{{$data->target_amt+$data->carry_forward_amt}}</span></a></li>
             <?php
                 $balance=0;
-                $total_target=$data->target_amt+$data->carry_forward_amt;
+                $total_target=$data->target_amt;
                 if($total_target > $data->day_sales_value)
                     $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($total_target-$data->day_sales_value).'</span></a></li>';
                 else
