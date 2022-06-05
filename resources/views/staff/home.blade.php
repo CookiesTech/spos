@@ -154,32 +154,35 @@ setlocale(LC_MONETARY, 'en_IN');
         </div>
     </div>
     <!---Today Target Amount----->
-    @if(!empty($today_target_data))
+    @if($today_target_data)
     <div class="bootdey">
-    <div class="row bootstrap snippets bootdey">
+<div class="row bootstrap snippets bootdey">
+@foreach($today_target_data as $data)
     <div class="col-md-3">
       <div class="box box-widget widget-user-2">
-      <div class="widget-user-header bg-yellow">
-          <h3 class="widget-user-username">Today Target</h3>
-          <h5 class="widget-user-desc">We Can Do It..</h5>
+        <div class="widget-user-header bg-yellow">
+          <h3 class="widget-user-username">{{$data->fname}}</h3>
+          <h5 class="widget-user-desc">{{$data->emp_id}}</h5>
         </div>
         <div class="box-footer no-padding">
           <ul class="nav nav-stacked">
-            <li><a href="#">Target Amount  <span class="pull-right badge bg-defult">{{$today_target_data->target_amt}}</span></a></li>
-            <li><a href="#">Today Sales<span class="pull-right badge bg-defult">{{$today_target_data->day_sales_value}}</span></a></li>
+            <li><a href="#">Target Amount  <span class="pull-right badge bg-defult">{{$data->target_amt}}</span></a></li>
+            <li><a href="#">Today Sales<span class="pull-right badge bg-defult">{{$data->day_sales_value}}</span></a></li>
             <?php
                 $balance=0;
-                $total_target=$today_target_data->target_amt;
-                if($total_target > $today_target_data->day_sales_value)
-                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($total_target-$today_target_data->day_sales_value).'</span></a></li>';
+                $total_target=$data->target_amt;
+                if($total_target > $data->day_sales_value)
+                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-red">'.($total_target-$data->day_sales_value).'</span></a></li>';
                 else
-                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-green">'.($today_target_data->day_sales_value-$total_target).'</span></a></li>';
+                    $btn='<li><a href="#">Balance <span class="pull-right badge bg-green">'.($data->day_sales_value-$total_target).'</span></a></li>';
             ?>
             <?php echo $btn;?>
           </ul>
         </div>
       </div>
     </div>
+    @endforeach
+</div>
 </div>
 @endif
 </div>

@@ -7,7 +7,7 @@
 <!-- END BREADCRUMB -->
 <!-- PAGE TITLE -->
 <div class="page-title">                    
-    <h2><span class="fa fa-arrow-circle-o-left"></span> Target Managers  {{date('F')}}</h2>
+    <h2><span class="fa fa-arrow-circle-o-left"></span> Target Managers</h2>
 </div>
 <!-- END PAGE TITLE -->                
 <!-- PAGE CONTENT WRAPPER -->
@@ -77,6 +77,17 @@
                         <tbody>
                   
                         </tbody>
+                        <tfoot align="right">
+		                  <tr>
+                              <th></th>
+                              <th></th>
+                              <th></th>
+                              <th></th>
+                              <th></th>
+                              <th></th>
+                              <th></th>
+                            </tr>
+	              </tfoot>
                     </table>                                    
                 </div>
             </div>
@@ -106,7 +117,7 @@
                                 <select name="emp_id" id="emp_id" class="form-control" required>
                                     <option  value="">[Select Employee]</option>
                                     @foreach($employees as $data)
-                                    <option value="{{$data->emp_id}}">{{$data->fname}} ({{$data->emp_id}})</option>
+                                    <option value="{{$data->emp_id}}">{{$data->name}} ({{$data->emp_id}})</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -149,6 +160,42 @@
                 d.branch_id = $('#s_branch_id').val();
             }
         },
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api(), data;
+            var Balance=0;
+            // converting to interger to find total
+            var intVal = function ( i ) {
+                return typeof i === 'string' ?
+                    i.replace(/[\$,]/g, '')*1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+ 
+            // computing column Total of the complete result 
+            var TargetValue = api
+                .column(4)
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+				
+	        var SaleValue = api
+                .column(5)
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+        // Update footer by showing the total with the reference of the column index 
+	    $( api.column( 3 ).footer() ).html('Total');
+        $( api.column( 4 ).footer() ).html(TargetValue.toLocaleString('en-IN'));
+        $( api.column( 5 ).footer() ).html(SaleValue.toLocaleString('en-IN'));
+
+        if(SaleValue>TargetValue)
+            Balance='<span class="label label-success">'+(SaleValue-TargetValue).toLocaleString('en-IN')+'<span>';
+        else
+            Balance='<span class="label label-danger">'+(TargetValue -SaleValue).toLocaleString('en-IN')+'<span>';
+        $( api.column( 6 ).footer() ).html(Balance);
+        },
         "columns": [
             { data: 'date', name: 'date' },
             { data: 'emp_id', name: 'emp_id' },
@@ -159,6 +206,7 @@
             { data: 'blance', name: 'blance' }
         ]
     });
+
     $(document).on('click', '.search_filter', function (e) {
         e.preventDefault();
         $('#datatable').DataTable().draw();

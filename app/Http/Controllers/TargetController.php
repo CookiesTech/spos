@@ -61,7 +61,10 @@ class TargetController extends Controller {
             })
             ->editColumn('branch_id', function($data){
                 $branch = $this->get_branch_name($data->branch_id);
-                return $branch->name.'('.$data->branch_id.')';
+                if(!empty($branch))
+                    return $branch->name.'('.$data->branch_id.')';
+                else
+                    return $data->branch_id;
             })
             ->editColumn('emp_id', function($data){
                 $emp_name = $this->get_emp_name($data->emp_id);

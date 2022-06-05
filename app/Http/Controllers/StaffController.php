@@ -38,10 +38,11 @@ class StaffController extends Controller
 		->selectRaw('payment_mode,sum(total_amount) as total_amt')->groupBy('payment_mode')->get();
         $datas=Sales::where('branch_id',Auth::user()->branch_id)->whereDate('created_at', Carbon::today())->orderby('id','desc')
 		->where('status',1)->limit(10)->get();
-        $today_target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+        $today_target_data=DB::table('employee_target as t')->select('e.fname','t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
         ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
-        ->where('t.emp_id',Auth::user()->emp_id)
-        ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->first();
+        ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
+        ->where('e.branch_id',Auth::user()->branch_id)
+        ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->get();
        return view('staff/home',['datas' => $datas,'today_bill_count'=>$today_bill_count,'today_bill_value'=>$today_bill_value,
 	   'today_bill_source'=>$today_bill_source,'today_target_data'=>$today_target_data]);
     }
@@ -49,7 +50,7 @@ class StaffController extends Controller
     {
         if($request->ajax()){      
             $sales = Sales::select(array(
-                'invoice_id', 'customer_name', 'payment_mode', 'payable_amount', 'balance','total_amount','created_at'
+                'invoice_id', 'customer_name', 'payment_mode', 'payable_amount', 'balance','total_amount','created_at','id'
             ))->where('branch_id',Auth::user()->branch_id)->orderby('id','desc')->where('status',1)->get();
             return Datatables::of($sales)
             ->addColumn('action', function($row){
@@ -59,10 +60,6 @@ class StaffController extends Controller
             ->editColumn('created_at', function($data){
                 $formatedDate = date('d-m-Y H:i:s', strtotime($data->created_at)); 
                 return $formatedDate; 
-            })
-            ->editColumn('branch_id', function($data){
-                $branch = $this->get_branch_name($data->branch_id);
-                return $branch->name.'('.$data->branch_id.')';
             })
             ->rawColumns(['action','branch_id'])
             ->make(true);
@@ -288,24 +285,25 @@ class StaffController extends Controller
         if($request->ajax()){  
             $start = new DateTime("first day of last month");
             $end =date('Y-m-t');
-            $target_data=DB::table('employee_target as t')->select('t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
+            $target_data=DB::table('employee_target as t')->select('e.fname','t.date','t.emp_id','t.target_amt','t.carry_forward_amt',DB::raw('IFNULL(d.branch_id,"-") as branch_id'),DB::raw('IFNULL(d.day_sales_value, 0) as day_sales_value'),DB::raw('IFNULL(d.day_sales_count, 0) as day_sales_count'))
             ->leftjoin('employee_day_sale as d','d.invoice_date','=','t.date')
-            ->where('t.emp_id', Auth::user()->emp_id)
+            ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
+            ->where('e.branch_id',Auth::user()->branch_id)
             ->whereBetween('t.date', [$start, $end])->groupBy('t.date','t.emp_id')->get();
             return Datatables::of($target_data)
-            ->addColumn('total_target', function($row){
-                return $row->target_amt+$row->carry_forward_amt;
+            ->editColumn('emp_id', function($data){
+                return $data->fname.'('.$data->emp_id.')';
             })
             ->addColumn('blance_target_amt', function($row){
                 $balance=0;
-                $total_target=$row->target_amt+$row->carry_forward_amt;
+                $total_target=$row->target_amt;
                 if($row->day_sales_value > $total_target)
                     $btn='<span class="label label-success">'.($row->day_sales_value-$total_target).'</span>';
                 else
                     $btn='<span class="label label-danger">'.($total_target-$row->day_sales_value).'</span>';
                 return $btn;
             })
-            ->rawColumns(['blance_target_amt','total_target'])
+            ->rawColumns(['blance_target_amt'])
             ->make(true);
         }
         return view('staff/sales_target');
