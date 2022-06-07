@@ -587,7 +587,7 @@ class HomeController extends Controller {
         $to_date = Input::get('to_date');
         $array=$this->category_array();
         $final_data=array();
-        if(Input::get('branch')!='all') {
+        if(Input::get('branch_id')!='all') {
             $branches_wise=Branches::all()->where('branch_id',Input::get('branch_id'));
          }
          else

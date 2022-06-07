@@ -136,15 +136,15 @@ padding:3px;
 								<td></td>
 								<td></td>
 								<td></td>
-								<td class="Rate"><h2>Recevied Amt</h2></td>
-								<td class="payment"><h2>Rs {{$payment_details->payable_amount}}.00</h2></td>
+								<td class="Rate"><h2>Total</h2></td>
+								<td class="payment"><h2>Rs {{$payment_details->total_amount}}.00</h2></td>
 							</tr>
 							<tr class="tabletitle">
 								<td></td>
 								<td></td>
 								<td></td>
-								<td class="Rate"><h2>Total</h2></td>
-								<td class="payment"><h2>Rs {{$payment_details->total_amount}}.00</h2></td>
+								<td class="Rate"><h2>Recevied Amt</h2></td>
+								<td class="payment"><h2>Rs {{$payment_details->payable_amount}}.00</h2></td>
 							</tr>
 							<tr class="tabletitle">
 								<td></td>

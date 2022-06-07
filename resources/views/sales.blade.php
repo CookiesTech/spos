@@ -213,7 +213,7 @@
 <script>
          $('#datatable').DataTable({
         "processing": true,
-        "order": [[ 0, "desc" ]],
+        "order": [[ 6, "desc" ]],
         "serverSide": true,
         "ajax": '{{url("admin/sales")}}',
         "columns": [
