@@ -66,6 +66,8 @@ class HomeController extends Controller {
 		$data->branch_id =$branch_id;
         $data->name = Input::get('name');
         $data->address = Input::get('address');
+        $data->gst_no = Input::get('gst_no');
+        $data->phone = Input::get('phone');
 		$data->in_tamilnadu = Input::get('in_tamilnadu');
         $data->save();
         Session::flash('success', 'Branch Added Successfully');
@@ -73,7 +75,7 @@ class HomeController extends Controller {
     }
 	   public function update_branch(Request $request) {
 		$update=Branches::where('id',$request->post('row_id'))->update(['name' =>$request->post('name'),'address'=>$request->post('address'),
-		'in_tamilnadu'=>$request->post('in_tamilnadu')]);
+		'in_tamilnadu'=>$request->post('in_tamilnadu'),'gst_no'=>$request->post('gst_no'),'phone'=>$request->post('phone')]);
         if($update)
 		{			
            Session::flash('success', 'Branch Added Successfully');
@@ -629,18 +631,17 @@ class HomeController extends Controller {
 	    $fm_date =Input::get('from_date');
         $to_date = Input::get('to_date');
 	    $final_data=array();
-	    $query = DB::table('sales as s')->join('branches as b','b.branch_id','=','s.branch_id')->selectRaw('s.branch_id,sum(s.payable_amount)as pay_amt,sum(s.total_amount) as tol_amt,sum(s.balance) as bl_amt,count(s.id) as bill_count,s.created_at,b.name,s.payment_mode');
+        $filter['from_date']=date('Y-m-d');
+        $filter['to_date']=date('Y-m-d');
+	    $query = DB::table('sales as s')->join('branches as b','b.branch_id','=','s.branch_id')->selectRaw('DATE(s.created_at) as date,s.branch_id,sum(s.payable_amount)as pay_amt,sum(s.total_amount) as tol_amt,sum(s.balance) as bl_amt,count(s.id) as bill_count,s.created_at,b.name,s.payment_mode');
         if($fm_date && $to_date){
+            $filter['from_date']=$fm_date;
+            $filter['to_date']=$to_date;
             $query =$query->whereBetween('s.created_at',[$fm_date, $to_date]);
         }else{
-            
            $query = $query->whereDate('s.created_at',Carbon::today());
-         
         }
-        
-        $data= $query->groupBy('branch_id')->get();
-        
-       //echo "<pre>";print_r($data);exit;
+        $data= $query->groupBy('branch_id','date')->get();
         if($data)
         {
             foreach($data as $d)
@@ -652,11 +653,7 @@ class HomeController extends Controller {
                 $final_data[]=array_merge($branch_status,$source);
             }
         }
-        else
-        {
-            $final_data=array();
-        }
-	    return view('branch_status',['data'=>$final_data]);
+	    return view('branch_status',['data'=>$final_data,'filter'=>$filter]);
 	}
     public function target_report()
     {

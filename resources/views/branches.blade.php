@@ -1,5 +1,3 @@
-
-
 @include('layouts.links')@include('layouts.header')
 <ul class="breadcrumb">
    <li><a href="#">Home</a></li>
@@ -23,6 +21,8 @@
                         <th>Name</th>
                         <th>Branch ID</th>
                         <th>In TamilNadu</th>
+                        <th>GST NO</th>
+                        <th>Ph</th>
                         <th>Action</th>
                      </tr>
                   </thead>
@@ -33,7 +33,11 @@
                         <td>                                    {{ $data->name }}                                </td>
                         <td>                                    {{ $data->branch_id }}                                </td>
                         <td>                                    {{ $data->in_tamilnadu }}                                </td>
-                        <td class="row-actions">                                   <button class="btn btn-primary" data-target="#exampleModal-{{$data->branch_id}}" data-toggle="modal" type="button" style="float:right">Edit </button>                                </td>
+                        <td>                                    {{ $data->gst_no }}                                </td>
+                        <td>                                    {{ $data->phone }}                                </td>
+                        <td class="text-center">                                   
+                           <button class="btn btn-primary" data-target="#exampleModal-{{$data->branch_id}}" data-toggle="modal" type="button">Edit </button>                                
+                        </td>
                      </tr>
                      <?php $i++; ?>                            @endforeach                        
                   </tbody>
@@ -55,7 +59,9 @@
                {{ csrf_field() }}                    
                <div class="row">
                   <div class="col-sm-6">
-                     <div class="form-group">                                <label for=""> Branch Area:</label><input class="form-control" placeholder="Enter Branch Area" name="name"  type="text" required>                            </div>
+                     <div class="form-group">                                
+                        <label for=""> Branch Area:</label>
+                        <input class="form-control" placeholder="Enter Branch Area" name="name"  type="text" required>                            </div>
                   </div>
                   <div class="col-sm-6">
                      <div class="form-group">
@@ -69,7 +75,21 @@
                   </div>
                </div>
                <div class="row">
-                  <div class="col-sm-612">
+                  <div class="col-sm-6">
+                     <div class="form-group">                                
+                        <label for="">Phone:</label>
+                        <input type="text" class="form-control" name="phone" required>                         
+                       </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">                                
+                        <label for="">GST NO:</label>
+                        <input type="text" class="form-control" name="gst_no"  required>                         
+                       </div>
+                  </div>
+               </div>
+               <div class="row">
+                  <div class="col-sm-12">
                      <div class="form-group">                                <label for="">Address:</label><textarea class="form-control" name="address" rows="3" required></textarea>                            </div>
                   </div>
                </div>
@@ -92,7 +112,9 @@
                <input type="hidden" name="row_id" value="{{$data->id}}">                    {{ csrf_field() }}                    
                <div class="row">
                   <div class="col-sm-6">
-                     <div class="form-group">                                <label for=""> Branch Area:</label>								<input class="form-control" placeholder="Enter Branch Area" name="name"  type="text" required value="{{$data->name}}">                            </div>
+                     <div class="form-group">                                
+                        <label for=""> Branch Area:</label>								
+                        <input class="form-control" placeholder="Enter Branch Area" name="name"  type="text" required value="{{$data->name}}">                            </div>
                   </div>
                   <div class="col-sm-6">
                      <div class="form-group">
@@ -102,6 +124,20 @@
                            <option value="yes" @if($data->in_tamilnadu=="yes") selected @endif>Yes</option>								<option value="no" @if($data->in_tamilnadu=="no") selected @endif>No</option>								
                         </select>
                      </div>
+                  </div>
+               </div>
+               <div class="row">
+               <div class="col-sm-6">
+                     <div class="form-group">                                
+                        <label for="">Phone:</label>
+                        <input type="text" class="form-control" name="phone" required  value="{{$data->phone}}">                         
+                       </div>
+                  </div>
+                  <div class="col-sm-6">
+                     <div class="form-group">                                
+                        <label for="">GST NO:</label>
+                        <input type="text" class="form-control" name="gst_no" required value="{{$data->gst_no}}">                         
+                       </div>
                   </div>
                </div>
                <div class="row">
@@ -117,4 +153,3 @@
    </div>
 </div>
 @endforeach
-

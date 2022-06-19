@@ -105,9 +105,13 @@ padding:3px;
     <div id="mid">
       <div class="info">
         <p style="text-align:center"> 
-            183 Arcot Road<br>
-            Vadapalani,Chennai-600026.<br>
-            GSTIN-33AJYPV3468LZ5
+            {!! $branch_details->address !!}
+        </p>
+		<p style="text-align:center">
+			Ph-{{$branch_details->phone}}
+        </p>
+		<p style="text-align:center">
+			GSTIN-{{$branch_details->gst_no}}
         </p>
         <h2 style="margin:0px;" >Invoice No: {{$payment_details->invoice_id}}</h2>
         <p>Date: <?php echo date('Y-m-d H:i:s');?></p>
@@ -167,7 +171,7 @@ padding:3px;
 						<tbody>
 						<?php $total_net_amount=0; $total_price=0; $total2=0; $one_tax_total=0;$total_tax=0;$total_net_amount=0;?>
 						@foreach($tax_data as $t)
-						@if($in_tamilnadu->in_tamilnadu=='no')
+						@if($branch_details->in_tamilnadu=='no')
 						<tr>
 						<td>{{$t->igst}}</td>
 						<td><?php $net_amount1=$t->total_amt*(100/(100+$t->total_igst));$net_amount= number_format($net_amount1, 2, '.', ''); echo rupee_format('%!i',$net_amount);
@@ -198,7 +202,7 @@ padding:3px;
 						</tr>
 						@endif
 						@endforeach
-						@if($in_tamilnadu->in_tamilnadu=='no')
+						@if($branch_details->in_tamilnadu=='no')
 						<tfoot>
 						<tr>
 						<td></td>

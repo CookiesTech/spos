@@ -6,7 +6,7 @@
     <li><a href="sales">Branch Sale Report</a></li>
 </ul>
 <div class="page-title">                    
-    <h2><span class="fa fa-arrow-circle-o-left"></span> Branch Report</h2>
+    <h2><span class="fa fa-arrow-circle-o-left"></span> Branch Report ({{ date("j F", strtotime($filter['from_date'])).' - '.date("j F", strtotime($filter['to_date']))}} )</h2>
 </div>
 <div class="page-content-wrap">
     <div class="row">
@@ -15,13 +15,13 @@
                 <div class="col-sm-3">
                     From Date
                     <div class="form-group">
-                        <input class="form-control"  name="from_date"  type="date" required >
+                        <input class="form-control"  name="from_date"  type="date" required  value="{{$filter['from_date']}}">
                     </div>
                 </div>
                  <div class="col-sm-3">
                      To Date
                     <div class="form-group">
-                        <input class="form-control"  name="to_date"  type="date" required >
+                        <input class="form-control"  name="to_date"  type="date" required value="{{$filter['to_date']}}" >
                     </div>
                 </div>
                 <div class="col-sm-3">
@@ -69,20 +69,20 @@
                                     {{ $d['name'] }}
                                 </td>
                                 <td>
-                                    Rs{{rupee_format('%!i',$d['pay_amt'])}}
+                                    Rs. {{rupee_format('%!i',$d['pay_amt'])}}
                                 </td>
                                  <td>
-                                    Rs{{rupee_format('%!i',$d['bl_amt'])}}
+                                    Rs. {{rupee_format('%!i',$d['bl_amt'])}}
                                 </td>
                                  <td>
-                                    Rs{{rupee_format('%!i',$d['tol_amt'])}}
+                                    Rs. {{rupee_format('%!i',$d['tol_amt'])}}
                                 </td>
                                 <td>
                                     {{ $d['bill_count'] }}
                                 </td>
                                 <td>
                                     @foreach($d['source'] as $bill_sources)
-                                    <p class="money">{{$bill_sources['payment_mode']}}: Rs{{rupee_format('%!i',$bill_sources['p_total'])}}</p>
+                                    <p class="money">{{$bill_sources['payment_mode']}}: Rs. {{rupee_format('%!i',$bill_sources['p_total'])}}</p>
                                     @endforeach
                                 </td>
                                 <td>

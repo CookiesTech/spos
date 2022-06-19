@@ -130,7 +130,6 @@ class StaffController extends Controller
     }
     public function create_invoice_staff(Request $request)  
     {
-        
         try 
         {
             DB::beginTransaction();
@@ -215,11 +214,11 @@ class StaffController extends Controller
      public function print_bill($invoice_id)
     {
 		  $data['payment_details']=Sales::where('invoice_id',$invoice_id)->first();
-		  $data['in_tamilnadu']=Branches::where('branch_id',$data['payment_details']->branch_id)->select('in_tamilnadu')->first();
+		  $data['branch_details']=Branches::where('branch_id',$data['payment_details']->branch_id)->first();
           $data['products']=Invoice::where('invoice_id',$invoice_id)->get();
 		  $query =DB::table('products as p')->join('invoice as i','i.sku','=','p.sku')->where('i.invoice_id',$invoice_id)
 		  ->selectRaw('sum(i.price * i.quantity) as total_amt,sum(p.igst) as total_igst,sum(p.cgst) as total_cgst,sum(p.sgst) as total_sgst,igst,cgst,sgst');
-		  $query = ($data['in_tamilnadu']->in_tamilnadu=="yes") ?  $query->groupBy('p.cgst') :   $query->groupBy('p.igst');
+		  $query = ($data['branch_details']->in_tamilnadu=="yes") ?  $query->groupBy('p.cgst') :   $query->groupBy('p.igst');
           $data['tax_data']= $query->get();
           if($data['payment_details'])
           {
@@ -232,7 +231,7 @@ class StaffController extends Controller
     }
     public function getProductsBySku() {
         $query = Input::get('sku');
-        $data = DB::table('products')->where('sku',$query)->where('branch_id',Auth::user()->branch_id)->where('approved_status',2)->get();
+        $data = DB::table('products')->where('sku',$query)->where('branch_id',Auth::user()->branch_id)->where('quantity','>',0)->where('approved_status',2)->get();
         return Response::json($data, 200);
     }
     public function staff_timecards()
