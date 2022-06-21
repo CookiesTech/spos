@@ -637,18 +637,19 @@ class HomeController extends Controller {
         if($fm_date && $to_date){
             $filter['from_date']=$fm_date;
             $filter['to_date']=$to_date;
-            $query =$query->whereBetween('s.created_at',[$fm_date, $to_date]);
+            $query =$query->whereDate('s.created_at', '>=', $fm_date)->whereDate('s.created_at', '<=', $to_date);
         }else{
            $query = $query->whereDate('s.created_at',Carbon::today());
         }
         $data= $query->groupBy('branch_id','date')->get();
+        
         if($data)
         {
             foreach($data as $d)
             {
                 $branch_status=(Array)$d;
-                $query = Sales::selectRaw('payment_mode,sum(total_amount) as p_total')->where('branch_id',$d->branch_id);
-                $query = ($res->get('from_date')) ?  $query->whereBetween('created_at',[$fm_date, $to_date]):  $query->whereDate('created_at',Carbon::today());
+                $query = Sales::selectRaw('payment_mode,sum(total_amount) as p_total,count(id)')->where('branch_id',$d->branch_id);
+                $query = ($res->get('from_date')) ?  $query->whereDate('created_at', '>=', $fm_date)->whereDate('created_at', '<=', $to_date):  $query->whereDate('created_at',Carbon::today());
                 $source['source']= $query->groupBy('payment_mode')->get();
                 $final_data[]=array_merge($branch_status,$source);
             }
