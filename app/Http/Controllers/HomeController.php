@@ -628,33 +628,56 @@ class HomeController extends Controller {
     }
 	public function branch_bill_status(Request $res)
 	{
-	    $fm_date =Input::get('from_date');
+        $branches=Branches::all();
+        //filter  data
+        $month_filter=Input::get('month_filter');
+        $fm_date =Input::get('from_date');
         $to_date = Input::get('to_date');
+        if(!empty($month_filter))
+            $month_filter=explode('-',$month_filter);
 	    $final_data=array();
-        $filter['from_date']=date('Y-m-d');
-        $filter['to_date']=date('Y-m-d');
-	    $query = DB::table('sales as s')->join('branches as b','b.branch_id','=','s.branch_id')->selectRaw('DATE(s.created_at) as date,s.branch_id,sum(s.payable_amount)as pay_amt,sum(s.total_amount) as tol_amt,sum(s.balance) as bl_amt,count(s.id) as bill_count,s.created_at,b.name,s.payment_mode');
-        if($fm_date && $to_date){
+        $filter['from_date']="";
+        $filter['to_date']="";
+        $filter['branch_id']=Input::get('branch_id');
+        $filter['month_filter']=Input::get('month_filter');
+	    $query = DB::table('sales as s')->join('branches as b','b.branch_id','=','s.branch_id')->selectRaw('group_concat(s.id) as sales_id,DATE(s.created_at) as date,s.branch_id,sum(s.payable_amount)as pay_amt,sum(s.total_amount) as tol_amt,sum(s.balance) as bl_amt,count(s.id) as bill_count,s.created_at,b.name,s.payment_mode');
+        if(Input::get('branch_id')!="" && Input::get('branch_id')!='all')
+             $query->where('s.branch_id', '=',Input::get('branch_id'));
+        if(!empty($month_filter))
+        {
+            $query = $query->whereYear('s.created_at', '=',$month_filter[1]);
+            $query = $query->whereMonth('s.created_at', '=', $month_filter[0]);
+            $data= $query->groupBy('branch_id')->get();
+        }
+        else if($res->get('from_date') && empty($month_filter) && $res->get('to_date'))
+        {
             $filter['from_date']=$fm_date;
             $filter['to_date']=$to_date;
-            $query =$query->whereDate('s.created_at', '>=', $fm_date)->whereDate('s.created_at', '<=', $to_date);
-        }else{
-           $query = $query->whereDate('s.created_at',Carbon::today());
+            $query = $query->whereDate('s.created_at', '>=', $fm_date)->whereDate('s.created_at', '<=', $to_date);
+            $data= $query->groupBy('branch_id','date')->get();
         }
-        $data= $query->groupBy('branch_id','date')->get();
-        
+        else
+        {
+            if(empty($month_filter))
+            {
+                $filter['from_date']=date('Y-m-d');
+                $filter['to_date']=date('Y-m-d');
+                $query = $query->whereDate('s.created_at',Carbon::today());
+                $data= $query->groupBy('branch_id','date')->get();
+            }
+        } 
         if($data)
         {
             foreach($data as $d)
             {
                 $branch_status=(Array)$d;
-                $query = Sales::selectRaw('payment_mode,sum(total_amount) as p_total,count(id)')->where('branch_id',$d->branch_id);
-                $query = ($res->get('from_date')) ?  $query->whereDate('created_at', '>=', $fm_date)->whereDate('created_at', '<=', $to_date):  $query->whereDate('created_at',Carbon::today());
+                $salses_id=explode(',',$d->sales_id);
+                $query = Sales::selectRaw('payment_mode,sum(total_amount) as p_total,count(id)')->where('branch_id',$d->branch_id)->whereIn('id',$salses_id);
                 $source['source']= $query->groupBy('payment_mode')->get();
                 $final_data[]=array_merge($branch_status,$source);
             }
         }
-	    return view('branch_status',['data'=>$final_data,'filter'=>$filter]);
+	    return view('branch_status',['data'=>$final_data,'filter'=>$filter,'branches'=>$branches]);
 	}
     public function target_report()
     {
