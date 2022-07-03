@@ -661,6 +661,7 @@ class HomeController extends Controller {
         {
             $filter['from_date']=$fm_date;
             $filter['to_date']=$to_date;
+            $filter['month_filter']="";
             $query = $query->whereDate('s.created_at', '>=', $fm_date)->whereDate('s.created_at', '<=', $to_date);
             $data= $query->groupBy('branch_id','date')->get();
         }
@@ -670,6 +671,7 @@ class HomeController extends Controller {
             {
                 $filter['from_date']=date('Y-m-d');
                 $filter['to_date']=date('Y-m-d');
+                $filter['month_filter']="";
                 $query = $query->whereDate('s.created_at',Carbon::today());
                 $data= $query->groupBy('branch_id','date')->get();
             }

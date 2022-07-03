@@ -6,8 +6,13 @@
     <li><a href="home">Home</a></li>
     <li><a href="sales">Branch Sale Report</a></li>
 </ul>
-<div class="page-title">                    
-    <h2><span class="fa fa-arrow-circle-o-left"></span> Branch Report ({{ date("j F", strtotime($filter['from_date'])).' - '.date("j F", strtotime($filter['to_date']))}} )</h2>
+<div class="page-title">
+    @if(!empty($filter['from_date']))                    
+        <h2><span class="fa fa-arrow-circle-o-left"></span> Branch Report ({{ date("j F", strtotime($filter['from_date'])).' - '.date("j F", strtotime($filter['to_date']))}} )</h2>
+    @endif
+    @if(!empty($filter['month_filter']))
+        <h2><span class="fa fa-arrow-circle-o-left"></span> Branch Report ({{ date("F Y", strtotime("01-".$filter['month_filter']))}})</h2>
+    @endif
 </div>
 <div class="page-content-wrap">
     <div class="row">
@@ -32,7 +37,7 @@
                     <div class="col-sm-3">
                         <div class="form-group">               
                         <label for="">Month Wise:</label>
-                       <input type="text" name="month_filter" class="form-control" id="datepicker"> 
+                       <input type="text" name="month_filter" class="form-control" id="datepicker" value="{{$filter['month_filter']}}"> 
                         </div>
                    </div>
                     <div class="col-sm-3">
