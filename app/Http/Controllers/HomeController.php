@@ -640,7 +640,15 @@ class HomeController extends Controller {
         $filter['to_date']="";
         $filter['branch_id']=Input::get('branch_id');
         $filter['month_filter']=Input::get('month_filter');
-	    $query = DB::table('sales as s')->join('branches as b','b.branch_id','=','s.branch_id')->selectRaw('group_concat(s.id) as sales_id,DATE(s.created_at) as date,s.branch_id,sum(s.payable_amount)as pay_amt,sum(s.total_amount) as tol_amt,sum(s.balance) as bl_amt,count(s.id) as bill_count,s.created_at,b.name,s.payment_mode');
+	    $query = DB::table('sales as s')->join('branches as b','b.branch_id','=','s.branch_id')->selectRaw('SUM(CASE
+            WHEN payment_mode = "Card" THEN s.total_amount
+        END) total_card,
+        SUM(CASE
+            WHEN payment_mode = "Cash" THEN s.total_amount
+        END) total_cash,
+        SUM(CASE
+            WHEN payment_mode = "Gpay" THEN s.total_amount
+        END) total_gpay,DATE(s.created_at) as date,s.branch_id,sum(s.payable_amount)as pay_amt,sum(s.total_amount) as tol_amt,sum(s.balance) as bl_amt,count(s.id) as bill_count,s.created_at,b.name,s.payment_mode');
         if(Input::get('branch_id')!="" && Input::get('branch_id')!='all')
              $query->where('s.branch_id', '=',Input::get('branch_id'));
         if(!empty($month_filter))
@@ -666,18 +674,7 @@ class HomeController extends Controller {
                 $data= $query->groupBy('branch_id','date')->get();
             }
         } 
-        if($data)
-        {
-            foreach($data as $d)
-            {
-                $branch_status=(Array)$d;
-                $salses_id=explode(',',$d->sales_id);
-                $query = Sales::selectRaw('payment_mode,sum(total_amount) as p_total,count(id)')->where('branch_id',$d->branch_id)->whereIn('id',$salses_id);
-                $source['source']= $query->groupBy('payment_mode')->get();
-                $final_data[]=array_merge($branch_status,$source);
-            }
-        }
-	    return view('branch_status',['data'=>$final_data,'filter'=>$filter,'branches'=>$branches]);
+	    return view('branch_status',['data'=>$data,'filter'=>$filter,'branches'=>$branches]);
 	}
     public function target_report()
     {

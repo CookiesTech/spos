@@ -87,42 +87,40 @@
                             <?php $i = 1; $total_cash_recevied=0; $total_bal=0; $total_amt=0;$total_bill=0; $gpay=0;$card=0;$cash=0;?>
                             @foreach($data as $d)
                             @php 
-                              $total_cash_recevied=$total_cash_recevied+$d['pay_amt'];
-                              $total_bal=$total_bal+$d['bl_amt'];
-                              $total_amt=$total_amt+$d['tol_amt'];
-                              $total_bill=$total_bill+$d['bill_count'];
+                              $total_cash_recevied=$total_cash_recevied+$d->pay_amt;
+                              $total_bal=$total_bal+$d->bl_amt;
+                              $total_amt=$total_amt+$d->tol_amt;
+                              $total_bill=$total_bill+$d->bill_count;
                             @endphp
                             <tr>
                                 <td>{{$i}}</td>
                                 <td>
-                                    {{ $d['name'] }}
+                                    {{ $d->name }}
                                 </td>
                                 <td>
-                                    Rs. {{rupee_format('%!i',$d['pay_amt'])}}
+                                    Rs. {{rupee_format('%!i',$d->pay_amt)}}
                                 </td>
                                  <td>
-                                    Rs. {{rupee_format('%!i',$d['bl_amt'])}}
+                                    Rs. {{rupee_format('%!i',$d->bl_amt)}}
                                 </td>
                                  <td>
-                                    Rs. {{rupee_format('%!i',$d['tol_amt'])}}
+                                    Rs. {{rupee_format('%!i',$d->tol_amt)}}
                                 </td>
                                 <td>
-                                    {{ $d['bill_count'] }}
+                                    {{ $d->bill_count }}
                                 </td>
                                 <td>
-                                    <?php foreach($d['source'] as $bill_sources) { 
-                                        if($bill_sources['payment_mode']=='Card')
-                                            $card=$card+$bill_sources['p_total'];
-                                        if($bill_sources['payment_mode']=='Cash')
-                                            $cash=$cash+$bill_sources['p_total'];
-                                        if($bill_sources['payment_mode']=='Gpay')
-                                            $gpay=$gpay+$bill_sources['p_total'];
+                                    <?php 
+                                            $card=$card+$d->total_card;
+                                            $cash=$cash+$d->total_cash;
+                                            $gpay=$gpay+$d->total_gpay;
                                       ?>
-                                     <p class="money">{{$bill_sources['payment_mode']}}: Rs. {{rupee_format('%!i',$bill_sources['p_total'])}}</p>
-                                    <?php } ?>
+                                     <p class="money">Card: Rs. {{rupee_format('%!i',$d->total_card)}}</p>
+                                     <p class="money">Cash: Rs. {{rupee_format('%!i',$d->total_cash)}}</p>
+                                     <p class="money">Gpay: Rs. {{rupee_format('%!i',$d->total_gpay)}}</p>
                                 </td>
                                 <td>
-                                   {{ date('d/m/Y',strtotime($d['created_at'])) }}
+                                   {{ date('d/m/Y',strtotime($d->created_at)) }}
                                 </td>
                             </tr>
                             <?php $i++; ?>
