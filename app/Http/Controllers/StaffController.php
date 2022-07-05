@@ -45,7 +45,7 @@ class StaffController extends Controller
           })
         ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
         ->where('e.branch_id',Auth::user()->branch_id)
-        ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->get();
+        ->whereDate('t.date', Carbon::today())->groupBy('t.date','t.emp_id')->get();
        return view('staff/home',['datas' => $datas,'today_bill_count'=>$today_bill_count,'today_bill_value'=>$today_bill_value,
 	   'today_bill_source'=>$today_bill_source,'today_target_data'=>$today_target_data]);
     }

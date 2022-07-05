@@ -47,7 +47,7 @@ class HomeController extends Controller {
              ->on('t.date', '=', 'd.invoice_date');
           })
         ->leftjoin('employees as e','e.emp_id','=','t.emp_id')
-        ->whereDay('t.date', date('d'))->groupBy('t.date','t.emp_id')->get();
+        ->whereDate('t.date', Carbon::today())->groupBy('t.date','t.emp_id')->get();
         return view('home', ['pcount' => $pcount, 'today_bill_value' => $today_bill_value, 
         'today_bill_count' => $today_bill_count, 'datas' => $sales,'today_bill_source'=>$today_bill_source,'today_target_data'=>$today_target_data]);
     }
