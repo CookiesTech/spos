@@ -1,6 +1,7 @@
 /node_modules
 /public/hot
 /public/storage
+/public/storage/logs
 /public/vendor
 .env
 .phpunit.result.cache
@@ -8,4 +9,3 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-storage/logs
